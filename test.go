@@ -24,7 +24,7 @@ func (t *Test) ConfigCommand(app *kingpin.Application) {
 	cmd.Arg("file", "Program to test").FileVar(&t.file)
 
 	// Flags
-	cmd.Flag("code", "Code of program to use").StringVar(&t.code)
+	cmd.Flag("code", "Code of program to use").Short('c').StringVar(&t.code)
 }
 
 // Run the command

@@ -29,8 +29,8 @@ func (u *Upload) ConfigCommand(app *kingpin.Application) {
 	cmd.Arg("file", "File to upload").Required().FileVar(&u.file)
 
 	// Flags
-	cmd.Flag("compiler", "Compiler to use").Default("G++11").StringVar(&u.compiler)
-	cmd.Flag("code", "Problem code").StringVar(&u.code)
+	cmd.Flag("compiler", "Compiler to use").Short('C').Default("G++11").StringVar(&u.compiler)
+	cmd.Flag("code", "Problem code").Short('c').StringVar(&u.code)
 }
 
 // Run the command
