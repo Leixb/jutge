@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"sync"
 
 	"github.com/imroc/req"
 	"gopkg.in/alecthomas/kingpin.v2"
@@ -14,8 +15,9 @@ import (
 
 // Download object that wraps its settings
 type Download struct {
-	code      string
-	overwrite bool
+	codes       []string
+	overwrite   bool
+	concurrency int
 }
 
 // NewDownload return new Download object
@@ -28,16 +30,41 @@ func (d *Download) ConfigCommand(app *kingpin.Application) {
 	cmd := app.Command("download", "Download problem files from jutge.org").Action(d.Run)
 
 	// Arguments
-	cmd.Arg("code", "Code of problem to download").Required().StringVar(&d.code)
+	cmd.Arg("code", "Codes of problems to download").Required().StringsVar(&d.codes)
 
 	// Flags
 	cmd.Flag("overwrite", "Overwrite existing files").BoolVar(&d.overwrite)
+	cmd.Flag("concurrency", "Number of simultaneous uploads").Default("3").IntVar(&d.concurrency)
 }
 
 // Run the command
 func (d *Download) Run(c *kingpin.ParseContext) error {
+	var wg sync.WaitGroup
+	sem := make(chan bool, d.concurrency)
 
-	r, err := req.Get("https://jutge.org/problems/" + d.code + "/zip")
+	for _, code := range d.codes {
+		sem <- true
+		wg.Add(1)
+
+		// Try to regex match code or fallback to passed value
+		codeReg, err := getCode(Conf.Regex, code)
+		if err != nil {
+			codeReg = code
+		}
+
+		go func(c string) {
+			d.downloadProblem(c)
+			<-sem
+			wg.Done()
+		}(codeReg)
+	}
+	wg.Wait()
+	return nil
+}
+
+func (d *Download) downloadProblem(code string) error {
+
+	r, err := req.Get("https://jutge.org/problems/" + code + "/zip")
 	if err != nil {
 		return err
 	}
