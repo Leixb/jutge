@@ -218,5 +218,11 @@ func (a *Auth) loadTmp() bool {
 	cookies = append(cookies, &http.Cookie{Name: "PHPSESSID", Value: save.Phpsessid})
 	a.R.Client().Jar.SetCookies(u, cookies)
 
+	err = a.setTokenUID()
+	if err != nil {
+		fmt.Println("Cookie Expired")
+		return false
+	}
+
 	return true
 }
