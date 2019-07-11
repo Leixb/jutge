@@ -59,7 +59,9 @@ func (d *Download) Run(c *kingpin.ParseContext) error {
 
 		fpath := filepath.Join(Conf.WorkDir, f.Name)
 
-		fmt.Println("Extracting:", fpath)
+		if !Conf.Quiet {
+			fmt.Println("Extracting:", fpath)
+		}
 
 		if f.FileInfo().IsDir() {
 			os.MkdirAll(fpath, os.ModePerm)
@@ -82,8 +84,6 @@ func (d *Download) Run(c *kingpin.ParseContext) error {
 
 		_, err = io.Copy(outFile, rc)
 
-		// Close the file without defer to close before next iteration of loop
-
 		outFile.Close()
 
 		rc.Close()
@@ -93,6 +93,8 @@ func (d *Download) Run(c *kingpin.ParseContext) error {
 		}
 
 	}
+
+	os.Remove(file.Name())
 
 	return nil
 }
