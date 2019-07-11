@@ -13,9 +13,11 @@ import (
 
 // Upload object that wraps its settings
 type Upload struct {
-	compiler string
-	files    []string
-	code     string
+	compiler    string
+	files       []string
+	code        string
+	annotation  string
+	concurrency int
 }
 
 // NewUpload return new Upload object
@@ -33,6 +35,8 @@ func (u *Upload) ConfigCommand(app *kingpin.Application) {
 	// Flags
 	cmd.Flag("compiler", "Compiler to use").Short('C').Default("G++11").StringVar(&u.compiler)
 	cmd.Flag("code", "Problem code").Short('c').StringVar(&u.code)
+	cmd.Flag("annotation", "Annotation").Short('a').Default("Uploaded with jutge_cli go").StringVar(&u.annotation)
+	cmd.Flag("concurrency", "Number of simultaneous uploads").Default("3").IntVar(&u.concurrency)
 }
 
 // Run the command
@@ -48,7 +52,7 @@ func (u *Upload) Run(c *kingpin.ParseContext) error {
 
 	var wg sync.WaitGroup
 
-	sem := make(chan bool, 3)
+	sem := make(chan bool, u.concurrency)
 
 	for _, file := range u.files {
 		sem <- true
@@ -78,7 +82,7 @@ func (u *Upload) Run(c *kingpin.ParseContext) error {
 func (u Upload) uploadFile(fileName string, a auth.Auth) (*req.Resp, error) {
 
 	param := req.Param{
-		"annotation":  "hi",
+		"annotation":  u.annotation,
 		"compiler_id": u.compiler,
 		"submit":      "submit",
 		"token_uid":   a.TokenUID,
