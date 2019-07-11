@@ -24,7 +24,7 @@ func main() {
 	app := kingpin.New("jutge_go", "Jutge.org CLI implemented in go")
 
 	app.Flag("work-dir", "Directory to save jutge files").Envar("JUTGE_WD").StringVar(&Conf.WorkDir)
-	app.Flag("regex", "Code regex").StringVar(&Conf.Regex)
+	app.Flag("regex", "Code regex").Default(`[PGQX]\d{5}_(ca|en|es)`).StringVar(&Conf.Regex)
 	app.Flag("verbosity", "Verbosity level").CounterVar(&Conf.Verbosity)
 	app.Flag("quiet", "Suppress output").BoolVar(&Conf.Quiet)
 
