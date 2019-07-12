@@ -11,6 +11,8 @@ import (
 
 	"github.com/imroc/req"
 	"gopkg.in/alecthomas/kingpin.v2"
+
+	"github.com/leixb/jutge/auth"
 )
 
 // Download object that wraps its settings
@@ -67,7 +69,17 @@ func (d *Download) Run(c *kingpin.ParseContext) error {
 
 func (d *Download) downloadProblem(code string) error {
 
-	r, err := req.Get("https://jutge.org/problems/" + code + "/zip")
+	rq := req.New()
+
+	if code[0] == byte('X') {
+		a, err := auth.Login()
+		if err != nil {
+			return err
+		}
+		rq = a.R
+	}
+
+	r, err := rq.Get("https://jutge.org/problems/" + code + "/zip")
 	if err != nil {
 		return err
 	}
