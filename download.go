@@ -53,7 +53,10 @@ func (d *Download) Run(c *kingpin.ParseContext) error {
 		}
 
 		go func(c string) {
-			d.downloadProblem(c)
+			err := d.downloadProblem(c)
+			if err != nil {
+				fmt.Println("failed", c, err)
+			}
 			<-sem
 			wg.Done()
 		}(codeReg)
