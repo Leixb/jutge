@@ -40,6 +40,9 @@ func (c *Check) Run(*kingpin.ParseContext) error {
 		sem <- true
 		wg.Add(1)
 		go func(pCode string) {
+
+			pCode = getCodeOrSame(pCode)
+
 			veredict, err := c.checkProblem(pCode)
 			if err != nil {
 				fmt.Println("Error", pCode, err)

@@ -38,7 +38,7 @@ func (u *Upload) ConfigCommand(app *kingpin.Application) {
 }
 
 // Run the command
-func (u *Upload) Run(c *kingpin.ParseContext) error {
+func (u *Upload) Run(*kingpin.ParseContext) error {
 	var err error
 
 	extractCode := u.code == ""
@@ -54,7 +54,7 @@ func (u *Upload) Run(c *kingpin.ParseContext) error {
 			defer func() { <-sem; wg.Done() }()
 			fmt.Println("Uploading:", f)
 			if extractCode {
-				u.code, err = getCode(Conf.Regex, f)
+				u.code, err = getCode(f)
 				if err != nil {
 					fmt.Println("Can't get code for file:", f)
 					return

@@ -38,7 +38,7 @@ func (d *Download) ConfigCommand(app *kingpin.Application) {
 }
 
 // Run the command
-func (d *Download) Run(c *kingpin.ParseContext) error {
+func (d *Download) Run(*kingpin.ParseContext) error {
 	var wg sync.WaitGroup
 	sem := make(chan bool, d.concurrency)
 
@@ -46,12 +46,7 @@ func (d *Download) Run(c *kingpin.ParseContext) error {
 		sem <- true
 		wg.Add(1)
 
-		// Try to regex match code or fallback to passed value
-		codeReg, err := getCode(Conf.Regex, code)
-		if err != nil {
-			codeReg = code
-		}
-
+		code = getCodeOrSame(code)
 		go func(c string) {
 			err := d.downloadProblem(c)
 			if err != nil {
@@ -59,7 +54,7 @@ func (d *Download) Run(c *kingpin.ParseContext) error {
 			}
 			<-sem
 			wg.Done()
-		}(codeReg)
+		}(code)
 	}
 	wg.Wait()
 	return nil

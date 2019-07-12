@@ -5,8 +5,9 @@ import (
 	"regexp"
 )
 
-func getCode(regex, fileName string) (string, error) {
-	re, err := regexp.Compile(regex)
+// getCode match regex agains string and return matching code
+func getCode(fileName string) (string, error) {
+	re, err := regexp.Compile(Conf.Regex)
 	if err != nil {
 		return "", err
 	}
@@ -17,4 +18,13 @@ func getCode(regex, fileName string) (string, error) {
 	}
 
 	return code, nil
+}
+
+// getCodeOrSame getCode or return the original value if not matched
+func getCodeOrSame(fileName string) string {
+	code, err := getCode(fileName)
+	if err != nil {
+		return fileName
+	}
+	return code
 }

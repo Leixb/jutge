@@ -47,7 +47,7 @@ func (t *Test) Run(c *kingpin.ParseContext) error {
 		var err error
 
 		if t.code == "" {
-			t.code, err = getCode(Conf.Regex, fileName)
+			t.code, err = getCode(fileName)
 			if err != nil {
 				return err
 			}
