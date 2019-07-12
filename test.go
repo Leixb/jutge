@@ -42,6 +42,8 @@ func (t *Test) ConfigCommand(app *kingpin.Application) {
 // Run the command
 func (t *Test) Run(c *kingpin.ParseContext) error {
 
+	passedAll, testCountAll := 0, 0
+
 	for _, fileName := range t.files {
 
 		var err error
@@ -63,41 +65,60 @@ func (t *Test) Run(c *kingpin.ParseContext) error {
 		sem := make(chan bool, t.concurrency)
 
 		var wg sync.WaitGroup
+		passed, testCount := 0, 0
 
 		for _, inputFile := range inputFiles {
+
+			testCount++
 
 			sem <- true
 			wg.Add(1)
 			go func(iFile string) {
-				err = t.runTest(fileName, iFile)
+				ok, err := t.runTest(fileName, iFile)
 				if err != nil {
 					fmt.Println("Error on", iFile, err)
+				}
+				if ok {
+					passed++
 				}
 				wg.Done()
 				<-sem
 			}(inputFile)
 
 		}
+
 		wg.Wait()
+
+		fmt.Printf("=== %s Success: %d/%d\n", fileName, passed, testCount)
+		passedAll += passed
+		testCountAll += testCount
+
+	}
+	if len(t.files) > 1 {
+		fmt.Printf("=== Success: %d/%d\n", passedAll, testCountAll)
+	}
+	if passedAll != testCountAll {
+		return fmt.Errorf("Failed %d out of %d tests", testCountAll-passedAll, testCountAll)
 	}
 	return nil
 }
 
-func (t *Test) runTest(command, iFile string) error {
+func (t *Test) runTest(command, iFile string) (bool, error) {
 	output, err := t.runCommand(command, iFile)
 	if err != nil {
-		return err
+		return false, err
 	}
 
 	expectedOutputFile := strings.TrimSuffix(iFile, filepath.Ext(iFile)) + ".cor"
 
 	expected, err := ioutil.ReadFile(expectedOutputFile)
 	if err != nil {
-		return err
+		return false, err
 	}
 
 	if bytes.Equal(output, expected) {
 		fmt.Println("=== OK:", iFile)
+		return true, nil
 	} else {
 
 		dmp := diffmatchpatch.New()
@@ -110,9 +131,8 @@ func (t *Test) runTest(command, iFile string) error {
 		str = fmt.Sprintf("%s==================\n", str)
 
 		fmt.Print(str)
-
+		return false, nil
 	}
-	return nil
 }
 
 func (t *Test) runCommand(command, inputFile string) ([]byte, error) {
