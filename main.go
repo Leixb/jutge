@@ -50,6 +50,7 @@ func main() {
 		NewDownload(),
 		NewTest(),
 		NewUpload(),
+		NewCheck(),
 	}
 
 	for _, command := range commands {
