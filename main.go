@@ -21,7 +21,7 @@ type GlobalConfig struct {
 var Conf GlobalConfig
 
 func main() {
-	app := kingpin.New("jutge_go", "Jutge.org CLI implemented in go")
+	app := kingpin.New(os.Args[0], "Jutge.org CLI implemented in go")
 
 	app.Flag("work-dir", "Directory to save jutge files").Default("JutgeProblems").Envar("JUTGE_WD").StringVar(&Conf.WorkDir)
 	app.Flag("regex", "Code regex").Default(`[PGQX]\d{5}_(ca|en|es)`).StringVar(&Conf.Regex)
