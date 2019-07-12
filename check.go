@@ -53,7 +53,7 @@ func (c *Check) CheckProblems() error {
 			if err != nil {
 				fmt.Println("Error", pCode, err)
 			} else {
-				fmt.Println(veredict)
+				fmt.Printf("%s: %s\n", pCode, veredict)
 			}
 		}(code)
 
@@ -76,5 +76,14 @@ func (c *Check) CheckProblem(code string) (string, error) {
 
 	veredict := doc.Find(".equal > div:nth-child(1) > div:nth-child(1) > div:nth-child(1)").Text()
 
-	return strings.TrimSpace(veredict), nil
+	// Remove white space and get veredit after ":"
+	splited := strings.Split(
+		strings.TrimSpace(veredict), ": ")
+	veredict = splited[len(splited)-1]
+
+	if veredict == "" {
+		veredict = "Not found"
+	}
+
+	return veredict, nil
 }
