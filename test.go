@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
@@ -17,8 +16,8 @@ import (
 
 // Test object that wraps its settings
 type Test struct {
-	code string
-	file *os.File
+	code  string
+	files []string
 
 	concurrency int
 }
@@ -33,7 +32,7 @@ func (t *Test) ConfigCommand(app *kingpin.Application) {
 	cmd := app.Command("test", "Test program").Action(t.Run)
 
 	// Arguments
-	cmd.Arg("file", "Program to test").FileVar(&t.file)
+	cmd.Arg("file", "Program to test").ExistingFilesVar(&t.files)
 
 	// Flags
 	cmd.Flag("code", "Code of program to use").Short('c').StringVar(&t.code)
@@ -43,45 +42,49 @@ func (t *Test) ConfigCommand(app *kingpin.Application) {
 // Run the command
 func (t *Test) Run(c *kingpin.ParseContext) error {
 
-	var err error
-	if t.code == "" {
-		t.code, err = getCode(Conf.Regex, t.file.Name())
+	for _, fileName := range t.files {
+
+		var err error
+
+		if t.code == "" {
+			t.code, err = getCode(Conf.Regex, fileName)
+			if err != nil {
+				return err
+			}
+		}
+
+		folder := filepath.Join(Conf.WorkDir, t.code)
+
+		inputFiles, err := filepath.Glob(folder + "/*.inp")
 		if err != nil {
 			return err
 		}
+
+		sem := make(chan bool, t.concurrency)
+
+		var wg sync.WaitGroup
+
+		for _, inputFile := range inputFiles {
+
+			sem <- true
+			wg.Add(1)
+			go func(iFile string) {
+				err = t.runTest(fileName, iFile)
+				if err != nil {
+					fmt.Println("Error on", iFile, err)
+				}
+				wg.Done()
+				<-sem
+			}(inputFile)
+
+		}
+		wg.Wait()
 	}
-
-	folder := filepath.Join(Conf.WorkDir, t.code)
-
-	files, err := filepath.Glob(folder + "/*.inp")
-	if err != nil {
-		return err
-	}
-
-	sem := make(chan bool, t.concurrency)
-
-	var wg sync.WaitGroup
-
-	for _, inputFile := range files {
-
-		sem <- true
-		wg.Add(1)
-		go func(iFile string) {
-			err = t.runTest(iFile)
-			if err != nil {
-				fmt.Println("Error on", iFile, err)
-			}
-			wg.Done()
-			<-sem
-		}(inputFile)
-
-	}
-	wg.Wait()
 	return nil
 }
 
-func (t *Test) runTest(iFile string) error {
-	output, err := t.runCommand(iFile)
+func (t *Test) runTest(command, iFile string) error {
+	output, err := t.runCommand(command, iFile)
 	if err != nil {
 		return err
 	}
@@ -112,13 +115,13 @@ func (t *Test) runTest(iFile string) error {
 	return nil
 }
 
-func (t *Test) runCommand(inputFile string) ([]byte, error) {
+func (t *Test) runCommand(command, inputFile string) ([]byte, error) {
 	input, err := ioutil.ReadFile(inputFile)
 	if err != nil {
 		return nil, err
 	}
 
-	cmd := exec.Command("./" + t.file.Name())
+	cmd := exec.Command("./" + command)
 
 	stdin, err := cmd.StdinPipe()
 	if err != nil {
