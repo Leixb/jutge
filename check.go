@@ -9,7 +9,7 @@ import (
 	"gopkg.in/alecthomas/kingpin.v2"
 )
 
-// Check object that wraps its settings
+// Check settings
 type Check struct {
 	codes       []string
 	concurrency int
@@ -33,6 +33,11 @@ func (c *Check) ConfigCommand(app *kingpin.Application) {
 
 // Run the command
 func (c *Check) Run(*kingpin.ParseContext) error {
+	return c.CheckProblems()
+}
+
+// CheckProblems check all problems in c.codes
+func (c *Check) CheckProblems() error {
 	var wg sync.WaitGroup
 	sem := make(chan bool, c.concurrency)
 
@@ -43,7 +48,7 @@ func (c *Check) Run(*kingpin.ParseContext) error {
 
 			pCode = getCodeOrSame(pCode)
 
-			veredict, err := c.checkProblem(pCode)
+			veredict, err := c.CheckProblem(pCode)
 			if err != nil {
 				fmt.Println("Error", pCode, err)
 			} else {
@@ -60,7 +65,8 @@ func (c *Check) Run(*kingpin.ParseContext) error {
 	return nil
 }
 
-func (c *Check) checkProblem(code string) (string, error) {
+// CheckProblem get problem veredict
+func (c *Check) CheckProblem(code string) (string, error) {
 	rq, err := Conf.getReq()
 	if err != nil {
 		return "", err

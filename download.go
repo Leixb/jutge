@@ -13,14 +13,14 @@ import (
 	"gopkg.in/alecthomas/kingpin.v2"
 )
 
-// Download object that wraps its settings
+// Download settings
 type Download struct {
 	codes       []string
 	overwrite   bool
 	concurrency int
 }
 
-// NewDownload return new Download object
+// NewDownload return Download object
 func NewDownload() *Download {
 	return &Download{}
 }
@@ -39,6 +39,11 @@ func (d *Download) ConfigCommand(app *kingpin.Application) {
 
 // Run the command
 func (d *Download) Run(*kingpin.ParseContext) error {
+	return d.DownloadProblems()
+}
+
+// DownloadProblems download all problems from d.codes
+func (d *Download) DownloadProblems() error {
 	var wg sync.WaitGroup
 	sem := make(chan bool, d.concurrency)
 
@@ -48,7 +53,7 @@ func (d *Download) Run(*kingpin.ParseContext) error {
 
 		code = getCodeOrSame(code)
 		go func(c string) {
-			err := d.downloadProblem(c)
+			err := d.DownloadProblem(c)
 			if err != nil {
 				fmt.Println("failed", c, err)
 			}
@@ -60,8 +65,8 @@ func (d *Download) Run(*kingpin.ParseContext) error {
 	return nil
 }
 
-func (d *Download) downloadProblem(code string) error {
-
+// downloadProblem download problem data to Conf.WorkDir
+func (d *Download) DownloadProblem(code string) error {
 	rq := req.New()
 
 	var err error

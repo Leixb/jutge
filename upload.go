@@ -9,7 +9,7 @@ import (
 	"gopkg.in/alecthomas/kingpin.v2"
 )
 
-// Upload object that wraps its settings
+// Upload settings
 type Upload struct {
 	compiler    string
 	files       []string
@@ -18,7 +18,7 @@ type Upload struct {
 	concurrency int
 }
 
-// NewUpload return new Upload object
+// NewUpload return Upload object
 func NewUpload() *Upload {
 	return &Upload{}
 }
@@ -39,6 +39,11 @@ func (u *Upload) ConfigCommand(app *kingpin.Application) {
 
 // Run the command
 func (u *Upload) Run(*kingpin.ParseContext) error {
+	return u.UploadFiles()
+}
+
+// UploadFiles upload all files in u.files
+func (u *Upload) UploadFiles() error {
 	var err error
 
 	extractCode := u.code == ""
@@ -60,7 +65,7 @@ func (u *Upload) Run(*kingpin.ParseContext) error {
 					return
 				}
 			}
-			err = u.uploadFile(f)
+			err = u.UploadFile(f)
 			if err != nil {
 				fmt.Println("Upload failed", f, err)
 			}
@@ -72,8 +77,8 @@ func (u *Upload) Run(*kingpin.ParseContext) error {
 	return err
 }
 
-func (u Upload) uploadFile(fileName string) error {
-
+// UploadFile submit file to jutge.org
+func (u Upload) UploadFile(fileName string) error {
 	token, err := Conf.getToken()
 	if err != nil {
 		return err
@@ -105,5 +110,4 @@ func (u Upload) uploadFile(fileName string) error {
 
 	_, err = rq.Post("https://jutge.org/problems/"+u.code+"/submissions", param, file)
 	return err
-
 }

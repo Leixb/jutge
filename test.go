@@ -14,15 +14,15 @@ import (
 	"gopkg.in/alecthomas/kingpin.v2"
 )
 
-// Test object that wraps its settings
+// Test settings
 type Test struct {
-	code  string
-	files []string
+	code     string
+	programs []string
 
 	concurrency int
 }
 
-// NewTest return new Test object
+// NewTest return Test object
 func NewTest() *Test {
 	return &Test{}
 }
@@ -32,7 +32,7 @@ func (t *Test) ConfigCommand(app *kingpin.Application) {
 	cmd := app.Command("test", "Test program").Action(t.Run)
 
 	// Arguments
-	cmd.Arg("file", "Program to test").ExistingFilesVar(&t.files)
+	cmd.Arg("programs", "Program to test").ExistingFilesVar(&t.programs)
 
 	// Flags
 	cmd.Flag("code", "Code of program to use").Short('c').StringVar(&t.code)
@@ -41,68 +41,89 @@ func (t *Test) ConfigCommand(app *kingpin.Application) {
 
 // Run the command
 func (t *Test) Run(c *kingpin.ParseContext) error {
-
-	passedAll, testCountAll := 0, 0
-
-	for _, fileName := range t.files {
-
-		var err error
-
-		if t.code == "" {
-			t.code, err = getCode(fileName)
-			if err != nil {
-				return err
-			}
-		}
-
-		folder := filepath.Join(Conf.WorkDir, t.code)
-
-		inputFiles, err := filepath.Glob(folder + "/*.inp")
-		if err != nil {
-			return err
-		}
-
-		sem := make(chan bool, t.concurrency)
-
-		var wg sync.WaitGroup
-		passed, testCount := 0, 0
-
-		for _, inputFile := range inputFiles {
-
-			testCount++
-
-			sem <- true
-			wg.Add(1)
-			go func(iFile string) {
-				ok, err := t.runTest(fileName, iFile)
-				if err != nil {
-					fmt.Println("Error on", iFile, err)
-				}
-				if ok {
-					passed++
-				}
-				wg.Done()
-				<-sem
-			}(inputFile)
-
-		}
-
-		wg.Wait()
-
-		fmt.Printf("=== %s Success: %d/%d\n", fileName, passed, testCount)
-		passedAll += passed
-		testCountAll += testCount
-
+	passed, count, err := t.TestPrograms()
+	if err != nil {
+		return err
 	}
-	if len(t.files) > 1 {
-		fmt.Printf("=== Success: %d/%d\n", passedAll, testCountAll)
+
+	if len(t.programs) > 1 {
+		fmt.Printf("=== Success: %d/%d\n", passed, count)
 	}
-	if passedAll != testCountAll {
-		return fmt.Errorf("Failed %d out of %d tests", testCountAll-passedAll, testCountAll)
+	if passed != count {
+		return fmt.Errorf("Failed %d out of %d tests", count-passed, count)
 	}
 	return nil
 }
 
+// TestPrograms Test all the programs in t.programs
+func (t *Test) TestPrograms() (passedTotal, countTotal int, err error) {
+	for _, fileName := range t.programs {
+
+		var code string
+
+		if t.code == "" {
+			code, err = getCode(fileName)
+			if err != nil {
+				fmt.Println("Can't get error for", fileName, err)
+				continue
+			}
+		}
+
+		passed, count, err := t.TestProgram(code, fileName)
+		if err != nil {
+			fmt.Println("=== Error running tests for", fileName)
+			continue
+		}
+
+		fmt.Printf("=== %s Success: %d/%d\n", fileName, passed, count)
+
+		passedTotal += passed
+		countTotal += count
+
+	}
+	return
+}
+
+// TestProgram Test program fileName against all sample files in Conf.WorkDir
+func (t *Test) TestProgram(code, fileName string) (passed, count int, err error) {
+	folder := filepath.Join(Conf.WorkDir, t.code)
+
+	inputFiles, err := filepath.Glob(folder + "/*.inp")
+	if err != nil {
+		return
+	}
+
+	var wg sync.WaitGroup
+	sem := make(chan bool, t.concurrency)
+
+	for _, inputFile := range inputFiles {
+
+		count++
+
+		sem <- true
+		wg.Add(1)
+		go func(iFile string) {
+			ok, err := t.runTest(fileName, iFile)
+			if err != nil {
+				fmt.Println("Error on", iFile, err)
+			}
+
+			if ok {
+				passed++
+			}
+
+			wg.Done()
+			<-sem
+		}(inputFile)
+
+	}
+
+	wg.Wait()
+
+	return
+}
+
+// runTest test program against a single sample
 func (t *Test) runTest(command, iFile string) (bool, error) {
 	output, err := t.runCommand(command, iFile)
 	if err != nil {
@@ -120,7 +141,6 @@ func (t *Test) runTest(command, iFile string) (bool, error) {
 		fmt.Println("=== OK:", iFile)
 		return true, nil
 	} else {
-
 		dmp := diffmatchpatch.New()
 		diffs := dmp.DiffMain(string(expected), string(output), true)
 
@@ -135,6 +155,7 @@ func (t *Test) runTest(command, iFile string) (bool, error) {
 	}
 }
 
+// runCommand run command with input from file inputFile and return output
 func (t *Test) runCommand(command, inputFile string) ([]byte, error) {
 	input, err := ioutil.ReadFile(inputFile)
 	if err != nil {
