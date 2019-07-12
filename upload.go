@@ -41,8 +41,6 @@ func (u *Upload) ConfigCommand(app *kingpin.Application) {
 func (u *Upload) Run(c *kingpin.ParseContext) error {
 	var err error
 
-	login()
-
 	extractCode := u.code == ""
 
 	var wg sync.WaitGroup

@@ -213,8 +213,6 @@ func (a *Credentials) loadTmp() bool {
 		return false
 	}
 
-	fmt.Printf("%+v\n", save)
-
 	a.TokenUID = save.TokenUID
 	a.Username = save.Email
 
