@@ -86,6 +86,13 @@ func (d *Download) downloadProblem(code string) error {
 
 		fpath := filepath.Join(Conf.WorkDir, f.Name)
 
+		if _, err = os.Stat(fpath); err == nil {
+			if !d.overwrite {
+				fmt.Println("Skipping:", fpath)
+				continue
+			}
+		}
+
 		if !Conf.Quiet {
 			fmt.Println("Extracting:", fpath)
 		}
@@ -112,7 +119,6 @@ func (d *Download) downloadProblem(code string) error {
 		_, err = io.Copy(outFile, rc)
 
 		outFile.Close()
-
 		rc.Close()
 
 		if err != nil {
