@@ -45,6 +45,7 @@ func (c *Check) CheckProblems() error {
 		sem <- true
 		wg.Add(1)
 		go func(pCode string) {
+			defer func() { <-sem; wg.Done() }()
 
 			pCode = getCodeOrSame(pCode)
 
@@ -54,8 +55,6 @@ func (c *Check) CheckProblems() error {
 			} else {
 				fmt.Println(veredict)
 			}
-			wg.Done()
-			<-sem
 		}(code)
 
 	}

@@ -103,6 +103,8 @@ func (t *Test) TestProgram(code, fileName string) (passed, count int, err error)
 		sem <- true
 		wg.Add(1)
 		go func(iFile string) {
+			defer func() { <-sem; wg.Done() }()
+
 			ok, err := t.runTest(fileName, iFile)
 			if err != nil {
 				fmt.Println("Error on", iFile, err)
@@ -112,8 +114,6 @@ func (t *Test) TestProgram(code, fileName string) (passed, count int, err error)
 				passed++
 			}
 
-			wg.Done()
-			<-sem
 		}(inputFile)
 
 	}

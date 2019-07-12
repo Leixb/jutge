@@ -57,6 +57,7 @@ func (u *Upload) UploadFiles() error {
 		wg.Add(1)
 		go func(f string) {
 			defer func() { <-sem; wg.Done() }()
+
 			fmt.Println("Uploading:", f)
 			if extractCode {
 				u.code, err = getCode(f)

@@ -53,12 +53,12 @@ func (d *Download) DownloadProblems() error {
 
 		code = getCodeOrSame(code)
 		go func(c string) {
+			defer func() { <-sem; wg.Done() }()
+
 			err := d.DownloadProblem(c)
 			if err != nil {
 				fmt.Println("failed", c, err)
 			}
-			<-sem
-			wg.Done()
 		}(code)
 	}
 	wg.Wait()
