@@ -23,6 +23,14 @@ func NewUpload() *Upload {
 	return &Upload{}
 }
 
+var compilers = []string{
+	"BEEF", "Chicken", "CLISP", "Erlang", "F2C", "FBC", "FPC", "G++",
+	"G++11", "GCC", "GCJ", "GDC", "GFortran", "GHC", "GNAT", "Go", "GObjC",
+	"GPC", "Guile", "IVL08", "JDK", "Lua", "MakePRO2", "MonoCS", "nodejs",
+	"P1++", "P2C", "Perl", "PHP", "PRO2", "Python", "Python3", "Quiz", "R",
+	"Ruby", "RunHaskell", "RunPython", "Stalin", "Verilog", "WS",
+}
+
 // ConfigCommand configure kingpin options
 func (u *Upload) ConfigCommand(app *kingpin.Application) {
 	cmd := app.Command("upload", "Upload file to jutge.org").Action(u.Run)
@@ -31,7 +39,7 @@ func (u *Upload) ConfigCommand(app *kingpin.Application) {
 	cmd.Arg("file", "File to upload").Required().ExistingFilesVar(&u.files)
 
 	// Flags
-	cmd.Flag("compiler", "Compiler to use").Short('C').Default("G++11").StringVar(&u.compiler)
+	cmd.Flag("compiler", "Compiler to use").Short('C').Default("G++11").EnumVar(&u.compiler, compilers...)
 	cmd.Flag("code", "Problem code").Short('c').StringVar(&u.code)
 	cmd.Flag("annotation", "Annotation").Short('a').Default("Uploaded with jutge_cli go").StringVar(&u.annotation)
 	cmd.Flag("concurrency", "Number of simultaneous uploads").Default("3").IntVar(&u.concurrency)
