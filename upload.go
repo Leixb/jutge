@@ -7,8 +7,6 @@ import (
 
 	"github.com/imroc/req"
 	"gopkg.in/alecthomas/kingpin.v2"
-
-	"github.com/leixb/jutge_go/auth"
 )
 
 // Upload object that wraps its settings
@@ -43,10 +41,7 @@ func (u *Upload) ConfigCommand(app *kingpin.Application) {
 func (u *Upload) Run(c *kingpin.ParseContext) error {
 	var err error
 
-	a, err := auth.Login()
-	if err != nil {
-		return err
-	}
+	login()
 
 	extractCode := u.code == ""
 
@@ -67,7 +62,7 @@ func (u *Upload) Run(c *kingpin.ParseContext) error {
 					return
 				}
 			}
-			_, err = u.uploadFile(f, a)
+			err = u.uploadFile(f)
 			if err != nil {
 				fmt.Println("Upload failed", f, err)
 			}
@@ -79,18 +74,23 @@ func (u *Upload) Run(c *kingpin.ParseContext) error {
 	return err
 }
 
-func (u Upload) uploadFile(fileName string, a auth.Auth) (*req.Resp, error) {
+func (u Upload) uploadFile(fileName string) error {
+
+	token, err := Conf.getToken()
+	if err != nil {
+		return err
+	}
 
 	param := req.Param{
 		"annotation":  u.annotation,
 		"compiler_id": u.compiler,
 		"submit":      "submit",
-		"token_uid":   a.TokenUID,
+		"token_uid":   token,
 	}
 
 	f, err := os.Open(fileName)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	defer f.Close()
 
@@ -100,6 +100,12 @@ func (u Upload) uploadFile(fileName string, a auth.Auth) (*req.Resp, error) {
 		FileName:  "program",
 	}
 
-	return a.R.Post("https://jutge.org/problems/"+u.code+"/submissions", param, file)
+	rq, err := Conf.getReq()
+	if err != nil {
+		return err
+	}
+
+	_, err = rq.Post("https://jutge.org/problems/"+u.code+"/submissions", param, file)
+	return err
 
 }

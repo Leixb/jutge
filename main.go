@@ -3,7 +3,10 @@ package main
 import (
 	"os"
 
+	"github.com/imroc/req"
 	"gopkg.in/alecthomas/kingpin.v2"
+
+	"github.com/leixb/jutge/auth"
 )
 
 type JutgeCommand interface {
@@ -16,9 +19,24 @@ type GlobalConfig struct {
 	Regex     string
 	Verbosity int
 	Quiet     bool
+	a         *auth.Credentials
 }
 
 var Conf GlobalConfig
+
+func (c *GlobalConfig) getToken() (string, error) {
+	if Conf.a == nil {
+		Conf.a = auth.GetInstance()
+	}
+	return c.a.TokenUID, nil
+}
+
+func (c *GlobalConfig) getReq() (*req.Req, error) {
+	if Conf.a == nil {
+		Conf.a = auth.GetInstance()
+	}
+	return c.a.R, nil
+}
 
 func main() {
 	app := kingpin.New(os.Args[0], "Jutge.org CLI implemented in go")

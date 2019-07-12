@@ -10,13 +10,20 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"sync"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/howeyc/gopass"
 	"github.com/imroc/req"
 )
 
-type Auth struct {
+var (
+	singleton *Credentials
+	once      sync.Once
+)
+
+// Auth object
+type Credentials struct {
 	Username string
 
 	TokenUID string
@@ -34,47 +41,43 @@ type persist struct {
 	Email     string `json:"email"`
 }
 
-func Login(credentials ...string) (Auth, error) {
-	var ldata loginData
-	switch len(credentials) {
-	case 0:
-	case 1:
-		ldata.Email = credentials[0]
-	case 2:
-		ldata.Email = credentials[0]
-		ldata.Password = credentials[1]
-	default:
-		return Auth{}, errors.New("Too many parameters")
-	}
-
-	var a Auth
-
-	if a.loadTmp() {
-		return a, nil
-	}
-
-	err := ldata.promptMissing()
-	if err != nil {
-		return a, err
-	}
-
-	a, err = login(ldata)
-	if err != nil {
-		return a, err
-	}
-
-	err = a.saveTmp()
-
-	return a, err
+// Create new Auth instance
+func GetInstance() *Credentials {
+	once.Do(func() {
+		var err error
+		singleton, err = newInstance()
+		if err != nil {
+			panic("Failed Login: " + err.Error())
+		}
+	})
+	return singleton
 }
 
-func login(ldata loginData) (auth Auth, err error) {
+func newInstance() (*Credentials, error) {
+	cred := &Credentials{TokenUID: "", Username: ""}
+	if cred.loadTmp() {
+		return cred, nil
+	}
 
-	auth.Username = ldata.Email
+	var ldata loginData
+	err := ldata.promptMissing()
+	if err != nil {
+		return nil, err
+	}
+	cred, err = login(ldata)
 
-	auth.R = req.New()
+	err = cred.saveTmp()
+	if err != nil {
+		fmt.Println("Save credentials error:", err)
+	}
+	return cred, nil
+}
 
-	auth.R.EnableCookie(true)
+func login(ldata loginData) (cred *Credentials, err error) {
+
+	cred = &Credentials{Username: ldata.Email, R: req.New()}
+
+	cred.R.EnableCookie(true)
 
 	params := req.Param{
 		"email":    ldata.Email,
@@ -82,17 +85,17 @@ func login(ldata loginData) (auth Auth, err error) {
 		"submit":   "submit",
 	}
 
-	resp, err := auth.R.Post("https://jutge.org", params)
+	resp, err := cred.R.Post("https://jutge.org", params)
 	if err != nil {
 		return
 	}
 
 	if len(resp.Response().Header.Get("Set-Cookie")) > 0 {
-		err = errors.New("Failed Login")
+		err = errors.New("Invalid Username / Password")
 		return
 	}
 
-	err = auth.setTokenUID()
+	err = cred.setTokenUID()
 	if err != nil {
 		return
 	}
@@ -100,7 +103,7 @@ func login(ldata loginData) (auth Auth, err error) {
 	return
 }
 
-func (a *Auth) setTokenUID() error {
+func (a *Credentials) setTokenUID() error {
 
 	resp, err := a.R.Get("https://jutge.org/problems/P68688_ca")
 	if err != nil {
@@ -151,7 +154,7 @@ func tmpFilename() string {
 }
 
 // Save credentials
-func (a *Auth) saveTmp() error {
+func (a *Credentials) saveTmp() error {
 
 	u, err := url.Parse("https://jutge.org")
 	if err != nil {
@@ -186,7 +189,7 @@ func (a *Auth) saveTmp() error {
 }
 
 // Restore saved credentials
-func (a *Auth) loadTmp() bool {
+func (a *Credentials) loadTmp() bool {
 	file, err := os.Open(tmpFilename())
 	if err != nil {
 		fmt.Println("open", err)
@@ -209,6 +212,8 @@ func (a *Auth) loadTmp() bool {
 		fmt.Println("parse", err)
 		return false
 	}
+
+	fmt.Printf("%+v\n", save)
 
 	a.TokenUID = save.TokenUID
 	a.Username = save.Email
