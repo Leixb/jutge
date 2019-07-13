@@ -18,7 +18,7 @@ type Check struct {
 
 // NewCheck return new Check object
 func NewCheck() *Check {
-	return &Check{}
+	return &Check{concurrency: 3}
 }
 
 // ConfigCommand configure kingpin options

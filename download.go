@@ -22,7 +22,7 @@ type Download struct {
 
 // NewDownload return Download object
 func NewDownload() *Download {
-	return &Download{}
+	return &Download{concurrency: 3}
 }
 
 // ConfigCommand configure kingpin options

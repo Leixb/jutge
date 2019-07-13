@@ -24,7 +24,7 @@ type Test struct {
 
 // NewTest return Test object
 func NewTest() *Test {
-	return &Test{}
+	return &Test{concurrency: 3}
 }
 
 // ConfigCommand configure kingpin options
