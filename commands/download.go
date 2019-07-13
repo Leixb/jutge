@@ -12,12 +12,11 @@ import (
 	"github.com/imroc/req"
 )
 
-// Download settings
 type download struct {
 	Overwrite bool
 }
 
-// NewDownload return Download object
+// NewDownload return download object
 func NewDownload() *download {
 	return &download{Overwrite: false}
 }

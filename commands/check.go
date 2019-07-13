@@ -9,11 +9,9 @@ import (
 	"github.com/PuerkitoBio/goquery"
 )
 
-// Check settings
-type check struct {
-}
+type check struct{}
 
-// NewCheck return new Check object
+// NewCheck return check object
 func NewCheck() *check {
 	return &check{}
 }

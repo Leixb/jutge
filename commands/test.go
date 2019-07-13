@@ -13,12 +13,11 @@ import (
 	"github.com/sergi/go-diff/diffmatchpatch"
 )
 
-// Test settings
 type test struct {
 	Code string
 }
 
-// NewTest return Test object
+// NewTest return test object
 func NewTest() *test {
 	return &test{Code: ""}
 }

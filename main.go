@@ -27,10 +27,10 @@ func main() {
 		UintVar(commands.Concurrency())
 
 	commands := []JutgeCommand{
-		&DownloadCmd{},
-		&TestCmd{},
-		&UploadCmd{},
-		&CheckCmd{},
+		&downloadCmd{},
+		&testCmd{},
+		&uploadCmd{},
+		&checkCmd{},
 	}
 
 	for _, command := range commands {

@@ -9,7 +9,6 @@ import (
 	"github.com/imroc/req"
 )
 
-// Upload settings
 type upload struct {
 	Code       string
 	Compiler   string
@@ -19,11 +18,12 @@ type upload struct {
 	codes map[string]bool
 }
 
-// NewUpload return Upload object
+// NewUpload return upload object
 func NewUpload() *upload {
 	return &upload{codes: make(map[string]bool), Compiler: "G++11"}
 }
 
+// GetCompilers list with all valid compilers for upload
 func GetCompilers() []string {
 	return compilers
 }
@@ -36,7 +36,7 @@ var compilers = []string{
 	"Ruby", "RunHaskell", "RunPython", "Stalin", "Verilog", "WS",
 }
 
-// UploadFiles upload all files in u.files
+// UploadFiles upload all files in files
 func (u *upload) UploadFiles(files []string) error {
 	var err error
 

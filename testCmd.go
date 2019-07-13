@@ -7,14 +7,12 @@ import (
 	"gopkg.in/alecthomas/kingpin.v2"
 )
 
-// Test settings
-type TestCmd struct {
+type testCmd struct {
 	code     string
 	programs []string
 }
 
-// ConfigCommand configure kingpin options
-func (t *TestCmd) ConfigCommand(app *kingpin.Application) {
+func (t *testCmd) ConfigCommand(app *kingpin.Application) {
 	cmd := app.Command("test", "Test program").Action(t.Run)
 
 	// Arguments
@@ -25,7 +23,7 @@ func (t *TestCmd) ConfigCommand(app *kingpin.Application) {
 }
 
 // Run the command
-func (t *TestCmd) Run(c *kingpin.ParseContext) error {
+func (t *testCmd) Run(c *kingpin.ParseContext) error {
 	cmd := commands.NewTest()
 	cmd.Code = t.code
 

@@ -5,13 +5,11 @@ import (
 	"gopkg.in/alecthomas/kingpin.v2"
 )
 
-// Check settings
-type CheckCmd struct {
+type checkCmd struct {
 	codes []string
 }
 
-// ConfigCommand configure kingpin options
-func (c *CheckCmd) ConfigCommand(app *kingpin.Application) {
+func (c *checkCmd) ConfigCommand(app *kingpin.Application) {
 	cmd := app.Command("check", "Check problem files from jutge.org").Action(c.Run)
 
 	// Arguments
@@ -19,7 +17,6 @@ func (c *CheckCmd) ConfigCommand(app *kingpin.Application) {
 
 }
 
-// Run the command
-func (c *CheckCmd) Run(*kingpin.ParseContext) error {
+func (c *checkCmd) Run(*kingpin.ParseContext) error {
 	return commands.NewCheck().CheckProblems(c.codes)
 }

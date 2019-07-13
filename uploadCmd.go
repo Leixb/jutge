@@ -5,17 +5,16 @@ import (
 	"gopkg.in/alecthomas/kingpin.v2"
 )
 
-// Upload settings
-type UploadCmd struct {
-	files      []string
+type uploadCmd struct {
+	files []string
+
 	code       string
 	compiler   string
 	annotation string
 	check      bool
 }
 
-// ConfigCommand configure kingpin options
-func (u *UploadCmd) ConfigCommand(app *kingpin.Application) {
+func (u *uploadCmd) ConfigCommand(app *kingpin.Application) {
 	cmd := app.Command("upload", "Upload file to jutge.org").Action(u.Run)
 
 	// Arguments
@@ -28,8 +27,7 @@ func (u *UploadCmd) ConfigCommand(app *kingpin.Application) {
 	cmd.Flag("check", "Check veredict after upload").BoolVar(&u.check)
 }
 
-// Run the command
-func (u *UploadCmd) Run(*kingpin.ParseContext) error {
+func (u *uploadCmd) Run(*kingpin.ParseContext) error {
 	cmd := commands.NewUpload()
 	cmd.Code = u.code
 	cmd.Compiler = u.compiler

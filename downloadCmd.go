@@ -5,14 +5,12 @@ import (
 	"gopkg.in/alecthomas/kingpin.v2"
 )
 
-// Download settings
-type DownloadCmd struct {
+type downloadCmd struct {
 	codes     []string
 	overwrite bool
 }
 
-// ConfigCommand configure kingpin options
-func (d *DownloadCmd) ConfigCommand(app *kingpin.Application) {
+func (d *downloadCmd) ConfigCommand(app *kingpin.Application) {
 	cmd := app.Command("download", "Download problem files from jutge.org").Action(d.Run)
 
 	// Arguments
@@ -22,8 +20,7 @@ func (d *DownloadCmd) ConfigCommand(app *kingpin.Application) {
 	cmd.Flag("overwrite", "Overwrite existing files").BoolVar(&d.overwrite)
 }
 
-// Run the command
-func (d *DownloadCmd) Run(*kingpin.ParseContext) error {
+func (d *downloadCmd) Run(*kingpin.ParseContext) error {
 	cmd := commands.NewDownload()
 	cmd.Overwrite = true
 	return cmd.DownloadProblems(d.codes)
