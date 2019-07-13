@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"sync"
+	"time"
 
 	"github.com/imroc/req"
 	"gopkg.in/alecthomas/kingpin.v2"
@@ -72,15 +73,21 @@ func (u *Upload) CheckUploaded() error {
 		sem <- true
 		wg.Add(1)
 
-		// TODO: check only last submission and wait for pending problems
 		go func(c string) {
 			defer func() { <-sem; wg.Done() }()
-			veredict, err := checker.CheckProblem(c)
-			if err != nil {
-				fmt.Println("Error checking", c, err)
-				return
+			for i := 0; i < 6; i++ {
+				time.Sleep(time.Second * 5)
+				veredict, err := checker.CheckLast(c)
+				if err != nil {
+					fmt.Println("Error checking", c, err)
+					return
+				}
+				if veredict != "Not found" {
+					fmt.Println(c, veredict)
+					return
+				}
 			}
-			fmt.Println(c, veredict)
+			fmt.Println(c, "Timed out")
 		}(code)
 	}
 

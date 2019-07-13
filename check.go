@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 	"sync"
 
@@ -86,4 +87,55 @@ func (c *Check) CheckProblem(code string) (string, error) {
 	}
 
 	return veredict, nil
+}
+
+// CheckSubmission get submission veredict
+func (c *Check) CheckSubmission(code string, submission int) (string, error) {
+	rq, err := Conf.getReq()
+	if err != nil {
+		return "", err
+	}
+
+	r, err := rq.Get(fmt.Sprintf("https://jutge.org/problems/%s/submissions/S%03d", code, submission))
+	doc, err := goquery.NewDocumentFromResponse(r.Response())
+
+	veredict := doc.Find("div.col-sm-6:nth-child(1) > div:nth-child(1) > div:nth-child(2) > table:nth-child(1) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(2) > table:nth-child(1) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(2) > a:nth-child(1)").Text()
+
+	// Remove white space and get veredit after ":"
+	splited := strings.Split(
+		strings.TrimSpace(veredict), ": ")
+	veredict = splited[len(splited)-1]
+
+	if veredict == "" {
+		veredict = "Not found"
+	}
+
+	return veredict, nil
+}
+
+func (c *Check) GetNumSubmissions(code string) (int, error) {
+	rq, err := Conf.getReq()
+	if err != nil {
+		return 0, err
+	}
+
+	r, err := rq.Get("https://jutge.org/problems/" + code)
+	doc, err := goquery.NewDocumentFromResponse(r.Response())
+
+	submissions := doc.Find(".equal > div:nth-child(1) > div:nth-child(1) > div:nth-child(2) > table:nth-child(1) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(3) > dl:nth-child(1) > dd:nth-child(2)").Text()
+
+	if submissions == "" {
+		submissions = "0"
+	}
+
+	return strconv.Atoi(submissions)
+}
+
+func (c *Check) CheckLast(code string) (string, error) {
+	n, err := c.GetNumSubmissions(code)
+	if err != nil {
+		return "Error", err
+	}
+
+	return c.CheckSubmission(code, n)
 }
