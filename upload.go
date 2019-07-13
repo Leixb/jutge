@@ -11,16 +11,19 @@ import (
 
 // Upload settings
 type Upload struct {
-	compiler    string
 	files       []string
 	code        string
+	compiler    string
 	annotation  string
+	check       bool
 	concurrency int
+
+	codes map[string]bool
 }
 
 // NewUpload return Upload object
 func NewUpload() *Upload {
-	return &Upload{}
+	return &Upload{codes: make(map[string]bool), concurrency: 3, compiler: "G++11"}
 }
 
 var compilers = []string{
@@ -43,11 +46,46 @@ func (u *Upload) ConfigCommand(app *kingpin.Application) {
 	cmd.Flag("code", "Problem code").Short('c').StringVar(&u.code)
 	cmd.Flag("annotation", "Annotation").Short('a').Default("Uploaded with jutge_cli go").StringVar(&u.annotation)
 	cmd.Flag("concurrency", "Number of simultaneous uploads").Default("3").IntVar(&u.concurrency)
+	cmd.Flag("check", "Check veredict after upload").BoolVar(&u.check)
 }
 
 // Run the command
 func (u *Upload) Run(*kingpin.ParseContext) error {
-	return u.UploadFiles()
+	err := u.UploadFiles()
+	if err != nil {
+		return err
+	}
+	if u.check {
+		return u.CheckUploaded()
+	}
+	return nil
+}
+
+// CheckUploaded checks veredict of uploaded problems
+func (u *Upload) CheckUploaded() error {
+	var wg sync.WaitGroup
+	sem := make(chan bool, u.concurrency)
+
+	checker := NewCheck()
+
+	for code, _ := range u.codes {
+		sem <- true
+		wg.Add(1)
+
+		// TODO: check only last submission and wait for pending problems
+		go func(c string) {
+			defer func() { <-sem; wg.Done() }()
+			veredict, err := checker.CheckProblem(c)
+			if err != nil {
+				fmt.Println("Error checking", c, err)
+				return
+			}
+			fmt.Println(c, veredict)
+		}(code)
+	}
+
+	wg.Wait()
+	return nil
 }
 
 // UploadFiles upload all files in u.files
@@ -57,7 +95,6 @@ func (u *Upload) UploadFiles() error {
 	extractCode := u.code == ""
 
 	var wg sync.WaitGroup
-
 	sem := make(chan bool, u.concurrency)
 
 	for _, file := range u.files {
@@ -67,17 +104,25 @@ func (u *Upload) UploadFiles() error {
 			defer func() { <-sem; wg.Done() }()
 
 			fmt.Println("Uploading:", f)
+
+			code := u.code
 			if extractCode {
-				u.code, err = getCode(f)
+				code, err = getCode(f)
 				if err != nil {
 					fmt.Println("Can't get code for file:", f)
 					return
 				}
+
 			}
-			err = u.UploadFile(f)
+
+			err = u.UploadFile(f, code)
 			if err != nil {
 				fmt.Println("Upload failed", f, err)
+				return
 			}
+			// Add code to set so it can be checked later
+			u.codes[code] = true
+
 		}(file)
 	}
 
@@ -87,7 +132,7 @@ func (u *Upload) UploadFiles() error {
 }
 
 // UploadFile submit file to jutge.org
-func (u Upload) UploadFile(fileName string) error {
+func (u Upload) UploadFile(fileName, code string) error {
 	token, err := Conf.getToken()
 	if err != nil {
 		return err
@@ -117,6 +162,6 @@ func (u Upload) UploadFile(fileName string) error {
 		return err
 	}
 
-	_, err = rq.Post("https://jutge.org/problems/"+u.code+"/submissions", param, file)
+	_, err = rq.Post("https://jutge.org/problems/"+code+"/submissions", param, file)
 	return err
 }
