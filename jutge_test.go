@@ -3,7 +3,6 @@ package main
 import "testing"
 
 func TestCheckSubmission(t *testing.T) {
-	return
 	c := NewCheck()
 
 	veredict, err := c.CheckSubmission("P71701_ca", 2)
