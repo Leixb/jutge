@@ -1,4 +1,4 @@
-package main
+package commands
 
 import (
 	"archive/zip"
@@ -10,44 +10,24 @@ import (
 	"sync"
 
 	"github.com/imroc/req"
-	"gopkg.in/alecthomas/kingpin.v2"
 )
 
 // Download settings
-type Download struct {
-	codes       []string
-	overwrite   bool
-	concurrency int
+type download struct {
+	Overwrite bool
 }
 
 // NewDownload return Download object
-func NewDownload() *Download {
-	return &Download{concurrency: 3}
-}
-
-// ConfigCommand configure kingpin options
-func (d *Download) ConfigCommand(app *kingpin.Application) {
-	cmd := app.Command("download", "Download problem files from jutge.org").Action(d.Run)
-
-	// Arguments
-	cmd.Arg("code", "Codes of problems to download").Required().StringsVar(&d.codes)
-
-	// Flags
-	cmd.Flag("overwrite", "Overwrite existing files").BoolVar(&d.overwrite)
-	cmd.Flag("concurrency", "Number of simultaneous uploads").Default("3").IntVar(&d.concurrency)
-}
-
-// Run the command
-func (d *Download) Run(*kingpin.ParseContext) error {
-	return d.DownloadProblems()
+func NewDownload() *download {
+	return &download{Overwrite: false}
 }
 
 // DownloadProblems download all problems from d.codes
-func (d *Download) DownloadProblems() error {
+func (d *download) DownloadProblems(codes []string) error {
 	var wg sync.WaitGroup
-	sem := make(chan bool, d.concurrency)
+	sem := make(chan bool, conf.concurrency)
 
-	for _, code := range d.codes {
+	for _, code := range codes {
 		sem <- true
 		wg.Add(1)
 
@@ -66,13 +46,13 @@ func (d *Download) DownloadProblems() error {
 }
 
 // downloadProblem download problem data to Conf.WorkDir
-func (d *Download) DownloadProblem(code string) error {
+func (d *download) DownloadProblem(code string) error {
 	rq := req.New()
 
 	var err error
 
 	if code[0] == byte('X') {
-		rq, err = Conf.getReq()
+		rq, err = getReq()
 		if err != nil {
 			return err
 		}
@@ -98,18 +78,16 @@ func (d *Download) DownloadProblem(code string) error {
 
 	for _, f := range z.File {
 
-		fpath := filepath.Join(Conf.WorkDir, f.Name)
+		fpath := filepath.Join(conf.workDir, f.Name)
 
 		if _, err = os.Stat(fpath); err == nil {
-			if !d.overwrite {
+			if !d.Overwrite {
 				fmt.Println("Skipping:", fpath)
 				continue
 			}
 		}
 
-		if !Conf.Quiet {
-			fmt.Println("Extracting:", fpath)
-		}
+		fmt.Println("Extracting:", fpath)
 
 		if f.FileInfo().IsDir() {
 			os.MkdirAll(fpath, os.ModePerm)

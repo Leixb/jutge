@@ -1,4 +1,4 @@
-package main
+package commands
 
 import (
 	"fmt"
@@ -7,42 +7,23 @@ import (
 	"sync"
 
 	"github.com/PuerkitoBio/goquery"
-	"gopkg.in/alecthomas/kingpin.v2"
 )
 
 // Check settings
-type Check struct {
-	codes       []string
-	concurrency int
+type check struct {
 }
 
 // NewCheck return new Check object
-func NewCheck() *Check {
-	return &Check{concurrency: 3}
+func NewCheck() *check {
+	return &check{}
 }
 
-// ConfigCommand configure kingpin options
-func (c *Check) ConfigCommand(app *kingpin.Application) {
-	cmd := app.Command("check", "Check problem files from jutge.org").Action(c.Run)
-
-	// Arguments
-	cmd.Arg("code", "Codes of problems to check").Required().StringsVar(&c.codes)
-
-	// Flags
-	cmd.Flag("concurrency", "Number of simultaneous uploads").Default("3").IntVar(&c.concurrency)
-}
-
-// Run the command
-func (c *Check) Run(*kingpin.ParseContext) error {
-	return c.CheckProblems()
-}
-
-// CheckProblems check all problems in c.codes
-func (c *Check) CheckProblems() error {
+// CheckProblems check all problems in codes
+func (c *check) CheckProblems(codes []string) error {
 	var wg sync.WaitGroup
-	sem := make(chan bool, c.concurrency)
+	sem := make(chan bool, conf.concurrency)
 
-	for _, code := range c.codes {
+	for _, code := range codes {
 		sem <- true
 		wg.Add(1)
 		go func(pCode string) {
@@ -66,8 +47,8 @@ func (c *Check) CheckProblems() error {
 }
 
 // CheckProblem get problem veredict
-func (c *Check) CheckProblem(code string) (string, error) {
-	rq, err := Conf.getReq()
+func (c *check) CheckProblem(code string) (string, error) {
+	rq, err := getReq()
 	if err != nil {
 		return "", err
 	}
@@ -90,8 +71,8 @@ func (c *Check) CheckProblem(code string) (string, error) {
 }
 
 // CheckSubmission get submission veredict
-func (c *Check) CheckSubmission(code string, submission int) (string, error) {
-	rq, err := Conf.getReq()
+func (c *check) CheckSubmission(code string, submission int) (string, error) {
+	rq, err := getReq()
 	if err != nil {
 		return "", err
 	}
@@ -113,8 +94,8 @@ func (c *Check) CheckSubmission(code string, submission int) (string, error) {
 	return veredict, nil
 }
 
-func (c *Check) GetNumSubmissions(code string) (int, error) {
-	rq, err := Conf.getReq()
+func (c *check) GetNumSubmissions(code string) (int, error) {
+	rq, err := getReq()
 	if err != nil {
 		return 0, err
 	}
@@ -131,7 +112,7 @@ func (c *Check) GetNumSubmissions(code string) (int, error) {
 	return strconv.Atoi(submissions)
 }
 
-func (c *Check) CheckLast(code string) (string, error) {
+func (c *check) CheckLast(code string) (string, error) {
 	n, err := c.GetNumSubmissions(code)
 	if err != nil {
 		return "Error", err

@@ -1,4 +1,4 @@
-package main
+package commands
 
 import (
 	"errors"
@@ -7,7 +7,7 @@ import (
 
 // getCode match regex agains string and return matching code
 func getCode(fileName string) (string, error) {
-	re, err := regexp.Compile(Conf.Regex)
+	re, err := regexp.Compile(conf.regex)
 	if err != nil {
 		return "", err
 	}

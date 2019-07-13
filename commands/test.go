@@ -1,4 +1,4 @@
-package main
+package commands
 
 import (
 	"bytes"
@@ -11,57 +11,25 @@ import (
 	"sync"
 
 	"github.com/sergi/go-diff/diffmatchpatch"
-	"gopkg.in/alecthomas/kingpin.v2"
 )
 
 // Test settings
-type Test struct {
-	code     string
-	programs []string
-
-	concurrency int
+type test struct {
+	Code string
 }
 
 // NewTest return Test object
-func NewTest() *Test {
-	return &Test{concurrency: 3}
-}
-
-// ConfigCommand configure kingpin options
-func (t *Test) ConfigCommand(app *kingpin.Application) {
-	cmd := app.Command("test", "Test program").Action(t.Run)
-
-	// Arguments
-	cmd.Arg("programs", "Program to test").ExistingFilesVar(&t.programs)
-
-	// Flags
-	cmd.Flag("code", "Code of program to use").Short('c').StringVar(&t.code)
-	cmd.Flag("concurrency", "Number of simultaneous tests").Default("3").IntVar(&t.concurrency)
-}
-
-// Run the command
-func (t *Test) Run(c *kingpin.ParseContext) error {
-	passed, count, err := t.TestPrograms()
-	if err != nil {
-		return err
-	}
-
-	if len(t.programs) > 1 {
-		fmt.Printf("=== Success: %d/%d\n", passed, count)
-	}
-	if passed != count {
-		return fmt.Errorf("Failed %d out of %d tests", count-passed, count)
-	}
-	return nil
+func NewTest() *test {
+	return &test{Code: ""}
 }
 
 // TestPrograms Test all the programs in t.programs
-func (t *Test) TestPrograms() (passedTotal, countTotal int, err error) {
-	for _, fileName := range t.programs {
+func (t *test) TestPrograms(programs []string) (passedTotal, countTotal int, err error) {
+	for _, fileName := range programs {
 
 		var code string
 
-		if t.code == "" {
+		if t.Code == "" {
 			code, err = getCode(fileName)
 			if err != nil {
 				fmt.Println("Can't get error for", fileName, err)
@@ -85,8 +53,8 @@ func (t *Test) TestPrograms() (passedTotal, countTotal int, err error) {
 }
 
 // TestProgram Test program fileName against all sample files in Conf.WorkDir
-func (t *Test) TestProgram(code, fileName string) (passed, count int, err error) {
-	folder := filepath.Join(Conf.WorkDir, t.code)
+func (t *test) TestProgram(code, fileName string) (passed, count int, err error) {
+	folder := filepath.Join(conf.workDir, code)
 
 	inputFiles, err := filepath.Glob(folder + "/*.inp")
 	if err != nil {
@@ -94,7 +62,7 @@ func (t *Test) TestProgram(code, fileName string) (passed, count int, err error)
 	}
 
 	var wg sync.WaitGroup
-	sem := make(chan bool, t.concurrency)
+	sem := make(chan bool, conf.concurrency)
 
 	for _, inputFile := range inputFiles {
 
@@ -124,7 +92,7 @@ func (t *Test) TestProgram(code, fileName string) (passed, count int, err error)
 }
 
 // runTest test program against a single sample
-func (t *Test) runTest(command, iFile string) (bool, error) {
+func (t *test) runTest(command, iFile string) (bool, error) {
 	output, err := t.runCommand(command, iFile)
 	if err != nil {
 		return false, err
@@ -156,7 +124,7 @@ func (t *Test) runTest(command, iFile string) (bool, error) {
 }
 
 // runCommand run command with input from file inputFile and return output
-func (t *Test) runCommand(command, inputFile string) ([]byte, error) {
+func (t *test) runCommand(command, inputFile string) ([]byte, error) {
 	input, err := ioutil.ReadFile(inputFile)
 	if err != nil {
 		return nil, err

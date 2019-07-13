@@ -3,10 +3,9 @@ package main
 import (
 	"os"
 
-	"github.com/imroc/req"
 	"gopkg.in/alecthomas/kingpin.v2"
 
-	"github.com/leixb/jutge/auth"
+	"github.com/leixb/jutge/commands"
 )
 
 type JutgeCommand interface {
@@ -14,43 +13,24 @@ type JutgeCommand interface {
 	Run(*kingpin.ParseContext) error
 }
 
-type GlobalConfig struct {
-	WorkDir   string
-	Regex     string
-	Verbosity int
-	Quiet     bool
-	a         *auth.Credentials
-}
-
-var Conf GlobalConfig
-
-func (c *GlobalConfig) getToken() (string, error) {
-	if Conf.a == nil {
-		Conf.a = auth.GetInstance()
-	}
-	return c.a.TokenUID, nil
-}
-
-func (c *GlobalConfig) getReq() (*req.Req, error) {
-	if Conf.a == nil {
-		Conf.a = auth.GetInstance()
-	}
-	return c.a.R, nil
-}
-
 func main() {
-	app := kingpin.New(os.Args[0], "Jutge.org CLI implemented in go")
+	app := kingpin.New(os.Args[0], "Jutge.org CLI")
 
-	app.Flag("work-dir", "Directory to save jutge files").Default("JutgeProblems").Envar("JUTGE_WD").StringVar(&Conf.WorkDir)
-	app.Flag("regex", "Code regex").Default(`[PGQX]\d{5}_(ca|en|es|fr|de)`).StringVar(&Conf.Regex)
-	app.Flag("verbosity", "Verbosity level").Short('v').CounterVar(&Conf.Verbosity)
-	app.Flag("quiet", "Suppress output").Short('q').BoolVar(&Conf.Quiet)
+	kingpin.Flag("work-dir",
+		"Directory to save jutge files").
+		Default("JutgeProblems").
+		Envar("JUTGE_WD").
+		StringVar(commands.Regex())
+	kingpin.Flag("concurrency",
+		"Maximum concurrent routines").
+		Default("3").
+		UintVar(commands.Concurrency())
 
 	commands := []JutgeCommand{
-		NewDownload(),
-		NewTest(),
-		NewUpload(),
-		NewCheck(),
+		&DownloadCmd{},
+		&TestCmd{},
+		&UploadCmd{},
+		&CheckCmd{},
 	}
 
 	for _, command := range commands {
