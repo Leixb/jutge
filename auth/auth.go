@@ -17,6 +17,11 @@ import (
 	"github.com/imroc/req"
 )
 
+// TokenNotFound error
+type TokenNotFound struct{}
+
+func (*TokenNotFound) Error() string { return "Token uid not found" }
+
 var (
 	singleton *Credentials
 	once      sync.Once
@@ -119,7 +124,7 @@ func (a *Credentials) setTokenUID() error {
 	a.TokenUID, ok = doc.Find(".col-sm-4 > input:nth-child(1)").Attr("value")
 
 	if !ok {
-		return errors.New("Token UID not found")
+		return &TokenNotFound{}
 	}
 
 	return nil
@@ -223,7 +228,12 @@ func (a *Credentials) loadTmp() bool {
 
 	err = a.setTokenUID()
 	if err != nil {
-		fmt.Println("Cookie Expired")
+		switch err.(type) {
+		case *TokenNotFound:
+			fmt.Println("Cookie Expired")
+		default:
+			fmt.Println("Connection error")
+		}
 		return false
 	}
 
