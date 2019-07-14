@@ -14,7 +14,10 @@ type JutgeCommand interface {
 }
 
 func main() {
-	app := kingpin.New(os.Args[0], "Jutge.org CLI")
+	app := kingpin.New("jutge", "Jutge.org CLI").
+		DefaultEnvars().
+		Author("Leixb").
+		Version("v0.2.0")
 
 	kingpin.Flag("work-dir",
 		"Directory to save jutge files").
