@@ -15,7 +15,9 @@ type uploadCmd struct {
 }
 
 func (u *uploadCmd) ConfigCommand(app *kingpin.Application) {
-	cmd := app.Command("upload", "Upload file to jutge.org").Action(u.Run)
+	cmd := app.Command("upload", "Upload file to jutge.org").
+		Alias("up").
+		Action(u.Run)
 
 	// Arguments
 	cmd.Arg("file", "File to upload").Required().ExistingFilesVar(&u.files)

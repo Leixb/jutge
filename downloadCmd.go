@@ -11,7 +11,9 @@ type downloadCmd struct {
 }
 
 func (d *downloadCmd) ConfigCommand(app *kingpin.Application) {
-	cmd := app.Command("download", "Download problem files from jutge.org").Action(d.Run)
+	cmd := app.Command("download", "Download problem files from jutge.org").
+		Alias("down").
+		Action(d.Run)
 
 	// Arguments
 	cmd.Arg("code", "Codes of problems to download").Required().StringsVar(&d.codes)
