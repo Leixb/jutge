@@ -20,7 +20,7 @@ func main() {
 		"Directory to save jutge files").
 		Default("JutgeProblems").
 		Envar("JUTGE_WD").
-		StringVar(commands.Regex())
+		StringVar(commands.WorkDir())
 	kingpin.Flag("concurrency",
 		"Maximum concurrent routines").
 		Default("3").
