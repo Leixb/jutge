@@ -2,17 +2,11 @@ package commands
 
 import (
 	"errors"
-	"regexp"
 )
 
 // getCode match regex agains string and return matching code
 func getCode(fileName string) (string, error) {
-	re, err := regexp.Compile(conf.regex)
-	if err != nil {
-		return "", err
-	}
-
-	code := re.FindString(fileName)
+	code := conf.regex.FindString(fileName)
 	if len(code) == 0 {
 		return "", errors.New("No match")
 	}

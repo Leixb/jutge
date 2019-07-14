@@ -28,6 +28,7 @@ func main() {
 		"Maximum concurrent routines").
 		Default("3").
 		UintVar(commands.Concurrency())
+	kingpin.Flag("regex", "Regular expression to match code").RegexpVar(commands.Regex())
 
 	commands := []JutgeCommand{
 		&downloadCmd{},

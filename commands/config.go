@@ -1,6 +1,8 @@
 package commands
 
 import (
+	"regexp"
+
 	"github.com/leixb/jutge/auth"
 
 	"github.com/imroc/req"
@@ -8,7 +10,7 @@ import (
 
 type config struct {
 	workDir string
-	regex   string
+	regex   *regexp.Regexp
 
 	a           *auth.Credentials
 	concurrency uint
@@ -18,7 +20,7 @@ var conf config
 
 func init() {
 	conf.workDir = "JutgeProblems"
-	conf.regex = `[PGQX]\d{5}_(ca|en|es|fr|de)`
+	conf.regex = regexp.MustCompile(`[PGQX]\d{5}_(ca|en|es|fr|de)`)
 	conf.concurrency = 3
 }
 
@@ -33,15 +35,21 @@ func SetConcurrency(n uint) {
 	}
 }
 
-func SetRegex(regex string) {
-	conf.regex = regex
+func SetRegex(regex string) (err error) {
+	conf.regex, err = regexp.Compile(regex)
+	return
 }
 
 func Concurrency() *uint {
 	return &conf.concurrency
 }
-func Regex() *string {
+
+func Regex() **regexp.Regexp {
 	return &conf.regex
+}
+
+func WorkDir() *string {
+	return &conf.workDir
 }
 
 func getToken() (string, error) {
