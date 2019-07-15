@@ -3,8 +3,8 @@ package commands
 import (
 	"bytes"
 	"fmt"
-	"io"
 	"io/ioutil"
+	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
@@ -107,57 +107,36 @@ func (t *test) runTest(command, iFile string) (bool, error) {
 	if bytes.Equal(output, expected) {
 		fmt.Println("=== OK:", iFile)
 		return true, nil
-	} else {
-		dmp := diffmatchpatch.New()
-		diffs := dmp.DiffMain(string(expected), string(output), true)
-
-		str := fmt.Sprintf("=== FAILED: %s\n", iFile)
-		str = fmt.Sprintf("%s===== OUTPUT =====\n%s\n", str, string(output))
-		str = fmt.Sprintf("%s==== EXPECTED ====\n%s\n", str, string(expected))
-		str = fmt.Sprintf("%s====== DIFF ======\n%s\n", str, dmp.DiffPrettyText(diffs))
-		str = fmt.Sprintf("%s==================\n", str)
-
-		fmt.Print(str)
-		return false, nil
 	}
+
+	// Results don't match -> output diff
+	dmp := diffmatchpatch.New()
+	diffs := dmp.DiffMain(string(expected), string(output), true)
+
+	str := fmt.Sprintf("=== FAILED: %s\n", iFile)
+	str = fmt.Sprintf("%s===== OUTPUT =====\n%s\n", str, string(output))
+	str = fmt.Sprintf("%s==== EXPECTED ====\n%s\n", str, string(expected))
+	str = fmt.Sprintf("%s====== DIFF ======\n%s\n", str, dmp.DiffPrettyText(diffs))
+	str = fmt.Sprintf("%s==================\n", str)
+
+	fmt.Print(str)
+	return false, nil
 }
 
 // runCommand run command with input from file inputFile and return output
 func (t *test) runCommand(command, inputFile string) ([]byte, error) {
-	input, err := ioutil.ReadFile(inputFile)
-	if err != nil {
-		return nil, err
-	}
 
 	cmd := exec.Command("./" + command)
 
-	stdin, err := cmd.StdinPipe()
+	input, err := os.Open(inputFile)
 	if err != nil {
 		return nil, err
 	}
-	stdout, err := cmd.StdoutPipe()
-	if err != nil {
-		return nil, err
-	}
+	defer input.Close()
 
-	err = cmd.Start()
-	if err != nil {
-		return nil, err
-	}
+	cmd.Stdin = input
 
-	_, err = io.WriteString(stdin, string(input))
-	if err != nil {
-		return nil, err
-	}
-
-	output, err := ioutil.ReadAll(stdout)
-	if err != nil {
-		return nil, err
-	}
-
-	if err := cmd.Wait(); err != nil {
-		return nil, err
-	}
+	output, err := cmd.CombinedOutput()
 
 	return output, nil
 }
