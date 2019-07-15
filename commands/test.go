@@ -135,7 +135,15 @@ func (t *test) runTest(command, iFile string) (bool, error) {
 // runCommand run command with input from file inputFile and return output
 func (t *test) runCommand(command, inputFile string) ([]byte, error) {
 
-	cmd := exec.Command("./" + command)
+	if len(command) == 0 {
+		return nil, fmt.Errorf("Empty command")
+	}
+
+	if command[0] != '/' {
+		command = "./" + command
+	}
+
+	cmd := exec.Command(command)
 
 	input, err := os.Open(inputFile)
 	if err != nil {
