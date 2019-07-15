@@ -12,6 +12,8 @@ type config struct {
 	workDir string
 	regex   *regexp.Regexp
 
+	username, password string
+
 	a           *auth.Credentials
 	concurrency uint
 }
@@ -52,16 +54,23 @@ func WorkDir() *string {
 	return &conf.workDir
 }
 
+func SetUsername(username string) {
+	conf.username = username
+}
+func SetPassword(password string) {
+	conf.password = password
+}
+
 func getToken() (string, error) {
 	if conf.a == nil {
-		conf.a = auth.GetInstance()
+		conf.a = auth.GetInstance(conf.username, conf.password)
 	}
 	return conf.a.TokenUID, nil
 }
 
 func getReq() (*req.Req, error) {
 	if conf.a == nil {
-		conf.a = auth.GetInstance()
+		conf.a = auth.GetInstance(conf.username, conf.password)
 	}
 	return conf.a.R, nil
 }

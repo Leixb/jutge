@@ -47,10 +47,23 @@ type persist struct {
 }
 
 // Create new Auth instance
-func GetInstance() *Credentials {
+func GetInstance(creds ...string) *Credentials {
 	once.Do(func() {
+		if len(creds) > 2 {
+			panic("Too many argumetns")
+		}
+
+		var ldata loginData
+
+		if len(creds) > 0 {
+			ldata.Email = creds[0]
+		}
+		if len(creds) > 1 {
+			ldata.Password = creds[1]
+		}
+
 		var err error
-		singleton, err = newInstance()
+		singleton, err = newInstance(ldata)
 		if err != nil {
 			panic("Failed Login: " + err.Error())
 		}
@@ -58,13 +71,13 @@ func GetInstance() *Credentials {
 	return singleton
 }
 
-func newInstance() (*Credentials, error) {
+func newInstance(ldata loginData) (*Credentials, error) {
+
 	cred := &Credentials{TokenUID: "", Username: ""}
 	if cred.loadTmp() {
 		return cred, nil
 	}
 
-	var ldata loginData
 	err := ldata.promptMissing()
 	if err != nil {
 		return nil, err

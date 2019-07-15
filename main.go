@@ -13,22 +13,40 @@ type JutgeCommand interface {
 	Run(*kingpin.ParseContext) error
 }
 
+var (
+	username,
+	password *string
+)
+
+func setUsername(*kingpin.ParseContext) error {
+	commands.SetUsername(*username)
+	return nil
+}
+func setPass(*kingpin.ParseContext) error {
+	commands.SetPassword(*password)
+	return nil
+}
+
 func main() {
 	app := kingpin.New("jutge", "Jutge.org CLI").
 		DefaultEnvars().
 		Author("Leixb").
 		Version("v0.2.0")
 
-	kingpin.Flag("work-dir",
+	app.Flag("work-dir",
 		"Directory to save jutge files").
 		Default("JutgeProblems").
-		Envar("JUTGE_WD").
 		StringVar(commands.WorkDir())
-	kingpin.Flag("concurrency",
+	app.Flag("concurrency",
 		"Maximum concurrent routines").
 		Default("3").
 		UintVar(commands.Concurrency())
-	kingpin.Flag("regex", "Regular expression to match code").RegexpVar(commands.Regex())
+	app.Flag("regex", "Regular expression to match code").RegexpVar(commands.Regex())
+
+	username = app.Flag("user", "Username").String()
+	password = app.Flag("pass", "Password").String()
+
+	app.Action(setUsername).Action(setPass)
 
 	commands := []JutgeCommand{
 		&downloadCmd{},
