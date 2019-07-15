@@ -14,12 +14,13 @@ import (
 )
 
 type test struct {
-	Code string
+	Code            string
+	DownloadMissing bool
 }
 
 // NewTest return test object
 func NewTest() *test {
-	return &test{Code: ""}
+	return &test{Code: "", DownloadMissing: false}
 }
 
 // TestPrograms Test all the programs in t.programs
@@ -54,6 +55,14 @@ func (t *test) TestPrograms(programs []string) (passedTotal, countTotal int, err
 // TestProgram Test program fileName against all sample files in Conf.WorkDir
 func (t *test) TestProgram(code, fileName string) (passed, count int, err error) {
 	folder := filepath.Join(conf.workDir, code)
+
+	if _, err := os.Stat(folder); os.IsNotExist(err) && t.DownloadMissing {
+		fmt.Println(folder, "does not exist, downloading...")
+		err = NewDownload().DownloadProblem(code)
+		if err != nil {
+			return 0, 0, err
+		}
+	}
 
 	inputFiles, err := filepath.Glob(folder + "/*.inp")
 	if err != nil {

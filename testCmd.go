@@ -10,6 +10,8 @@ import (
 type testCmd struct {
 	code     string
 	programs []string
+
+	noDownload bool
 }
 
 func (t *testCmd) ConfigCommand(app *kingpin.Application) {
@@ -20,12 +22,14 @@ func (t *testCmd) ConfigCommand(app *kingpin.Application) {
 
 	// Flags
 	cmd.Flag("code", "Code of program to use").Short('c').StringVar(&t.code)
+	cmd.Flag("no-download", "Don't attempt to download test files if not found in system").BoolVar(&t.noDownload)
 }
 
 // Run the command
 func (t *testCmd) Run(c *kingpin.ParseContext) error {
 	cmd := commands.NewTest()
 	cmd.Code = t.code
+	cmd.DownloadMissing = !t.noDownload
 
 	passed, count, err := cmd.TestPrograms(t.programs)
 	if err != nil {
