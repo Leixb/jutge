@@ -53,6 +53,7 @@ func main() {
 		&testCmd{},
 		&uploadCmd{},
 		&checkCmd{},
+		&databaseCmd{},
 	}
 
 	for _, command := range commands {
