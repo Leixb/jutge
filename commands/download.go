@@ -36,7 +36,7 @@ func (d *download) DownloadProblems(codes []string) error {
 
 			err := d.DownloadProblem(c)
 			if err != nil {
-				fmt.Println("failed", c, err)
+				fmt.Println(" ! Failed", c, err)
 			}
 		}(code)
 	}
@@ -81,12 +81,12 @@ func (d *download) DownloadProblem(code string) error {
 
 		if _, err = os.Stat(fpath); err == nil {
 			if !d.Overwrite {
-				fmt.Println("Skipping:", fpath)
+				fmt.Println(" + Skipping:", fpath)
 				continue
 			}
 		}
 
-		fmt.Println("Extracting:", fpath)
+		fmt.Println(" - Extracting:", fpath)
 
 		if f.FileInfo().IsDir() {
 			os.MkdirAll(fpath, os.ModePerm)

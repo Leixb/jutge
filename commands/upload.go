@@ -51,13 +51,13 @@ func (u *upload) UploadFiles(files []string) error {
 		go func(f string) {
 			defer func() { <-sem; wg.Done() }()
 
-			fmt.Println("Uploading:", f)
+			fmt.Println(" - Uploading:", f)
 
 			code := u.Code
 			if extractCode {
 				code, err = getCode(f)
 				if err != nil {
-					fmt.Println("Can't get code for file:", f)
+					fmt.Println(" ! Can't get code for file:", f)
 					return
 				}
 
@@ -65,7 +65,7 @@ func (u *upload) UploadFiles(files []string) error {
 
 			err = u.UploadFile(f, code)
 			if err != nil {
-				fmt.Println("Upload failed", f, err)
+				fmt.Println(" ! Upload failed", f, err)
 				return
 			}
 			// Add code to set so it can be checked later
@@ -131,15 +131,15 @@ func (u *upload) CheckUploaded() error {
 				time.Sleep(time.Second * 5)
 				veredict, err := checker.CheckLast(c)
 				if err != nil {
-					fmt.Println("Error checking", c, err)
+					fmt.Println(" ! Error checking", c, err)
 					return
 				}
 				if veredict != "Not found" {
-					fmt.Println(c, veredict)
+					fmt.Println(" -", c, veredict)
 					return
 				}
 			}
-			fmt.Println(c, "Timed out")
+			fmt.Println(" !", c, "Timed out")
 		}(code)
 	}
 

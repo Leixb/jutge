@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/leixb/jutge/commands"
 	"gopkg.in/alecthomas/kingpin.v2"
 )
@@ -40,7 +42,9 @@ func (u *uploadCmd) Run(*kingpin.ParseContext) error {
 	if err != nil {
 		return err
 	}
+	fmt.Println("=== Upload Finished")
 	if u.check {
+		fmt.Println("=== Waiting for veredicts...")
 		return cmd.CheckUploaded()
 	}
 	return nil

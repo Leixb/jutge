@@ -32,18 +32,18 @@ func (t *test) TestPrograms(programs []string) (passedTotal, countTotal int, err
 		if t.Code == "" {
 			code, err = getCode(fileName)
 			if err != nil {
-				fmt.Println("Can't get error for", fileName, err)
+				fmt.Println(" ! Can't get code for", fileName, err)
 				continue
 			}
 		}
 
 		passed, count, err := t.TestProgram(code, fileName)
 		if err != nil {
-			fmt.Println("=== Error running tests for", fileName)
+			fmt.Println(" !  Error running tests for", fileName)
 			continue
 		}
 
-		fmt.Printf("=== %s Success: %d/%d\n", fileName, passed, count)
+		fmt.Printf(" #  %s Success: %d/%d\n", fileName, passed, count)
 
 		passedTotal += passed
 		countTotal += count
@@ -57,7 +57,7 @@ func (t *test) TestProgram(code, fileName string) (passed, count int, err error)
 	folder := filepath.Join(conf.workDir, code)
 
 	if _, err := os.Stat(folder); os.IsNotExist(err) && t.DownloadMissing {
-		fmt.Println(folder, "does not exist, downloading...")
+		fmt.Println(" -", folder, "does not exist, downloading...")
 		err = NewDownload().DownloadProblem(code)
 		if err != nil {
 			return 0, 0, err
@@ -83,7 +83,7 @@ func (t *test) TestProgram(code, fileName string) (passed, count int, err error)
 
 			ok, err := t.runTest(fileName, iFile)
 			if err != nil {
-				fmt.Println("Error on", iFile, err)
+				fmt.Println(" ! Error on", iFile, err)
 			}
 
 			if ok {
@@ -114,7 +114,7 @@ func (t *test) runTest(command, iFile string) (bool, error) {
 	}
 
 	if bytes.Equal(output, expected) {
-		fmt.Println("=== OK:", iFile)
+		fmt.Println(" #  OK:", iFile)
 		return true, nil
 	}
 
@@ -122,11 +122,11 @@ func (t *test) runTest(command, iFile string) (bool, error) {
 	dmp := diffmatchpatch.New()
 	diffs := dmp.DiffMain(string(expected), string(output), true)
 
-	str := fmt.Sprintf("=== FAILED: %s\n", iFile)
-	str = fmt.Sprintf("%s===== OUTPUT =====\n%s\n", str, string(output))
-	str = fmt.Sprintf("%s==== EXPECTED ====\n%s\n", str, string(expected))
-	str = fmt.Sprintf("%s====== DIFF ======\n%s\n", str, dmp.DiffPrettyText(diffs))
-	str = fmt.Sprintf("%s==================\n", str)
+	str := fmt.Sprintf(" !  FAILED: %s\n", iFile)
+	str = fmt.Sprintf("%s ===== OUTPUT =====\n%s\n", str, string(output))
+	str = fmt.Sprintf("%s ==== EXPECTED ====\n%s\n", str, string(expected))
+	str = fmt.Sprintf("%s ====== DIFF ======\n%s\n", str, dmp.DiffPrettyText(diffs))
+	str = fmt.Sprintf("%s ==================\n", str)
 
 	fmt.Print(str)
 	return false, nil

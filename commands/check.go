@@ -31,9 +31,9 @@ func (c *check) CheckProblems(codes []string) error {
 
 			veredict, err := c.CheckProblem(pCode)
 			if err != nil {
-				fmt.Println("Error", pCode, err)
+				fmt.Println(" ! Error", pCode, err)
 			} else {
-				fmt.Printf("%s: %s\n", pCode, veredict)
+				fmt.Printf(" - %s: %s\n", pCode, veredict)
 			}
 		}(code)
 

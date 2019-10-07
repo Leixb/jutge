@@ -31,11 +31,11 @@ func (c *checkCmd) Run(*kingpin.ParseContext) error {
 		}
 		if c.submission == 0 {
 			veredict, err := commands.NewCheck().CheckLast(c.codes[0])
-			fmt.Printf("%s last: %s\n", c.codes[0], veredict)
+			fmt.Printf(" - %s last: %s\n", c.codes[0], veredict)
 			return err
 		}
 		veredict, err := commands.NewCheck().CheckSubmission(c.codes[0], c.submission)
-		fmt.Printf("%s S%03d: %s\n", c.codes[0], c.submission, veredict)
+		fmt.Printf(" - %s S%03d: %s\n", c.codes[0], c.submission, veredict)
 		return err
 	}
 	return commands.NewCheck().CheckProblems(c.codes)
