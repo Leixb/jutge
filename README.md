@@ -1,4 +1,4 @@
-# Jutge CLI [![GoDoc](https://godoc.org/github.com/Leixb/jutge?status.svg)](https://godoc.org/github.com/Leixb/jutge)
+# Jutge CLI [![Build Status](https://travis-ci.com/Leixb/jutge.svg?branch=master)](https://travis-ci.com/Leixb/jutge) [![GoDoc](https://godoc.org/github.com/Leixb/jutge?status.svg)](https://godoc.org/github.com/Leixb/jutge)
 
 Easily create, test, upload and check problems from [jutge.org](https://jutge.org) without leaving the terminal.
 
