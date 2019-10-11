@@ -2,9 +2,11 @@ package main
 
 import (
 	"fmt"
+	"path/filepath"
 
 	"gopkg.in/alecthomas/kingpin.v2"
 
+	"github.com/leixb/jutge/commands"
 	"github.com/leixb/jutge/database"
 )
 
@@ -19,8 +21,6 @@ func (d *databaseCmd) ConfigCommand(app *kingpin.Application) {
 	//SubCommands
 	cmd.Command("print", "Print database contents").Action(d.printRun)
 
-	cmd.Flag("DBFile", "Database file").Default("jutge.db").StringVar(&d.DBFile)
-
 	addCmd := cmd.Command("add", "Add entry to database").Action(d.addRun)
 	addCmd.Arg("code", "Proble ID").Required().StringVar(&d.code)
 	addCmd.Arg("title", "Proble title").Required().StringVar(&d.title)
@@ -33,7 +33,10 @@ func (d *databaseCmd) ConfigCommand(app *kingpin.Application) {
 
 }
 
-func (d *databaseCmd) Run(*kingpin.ParseContext) error { return nil }
+func (d *databaseCmd) Run(*kingpin.ParseContext) error {
+	d.DBFile = filepath.Join(*commands.WorkDir(), "jutge.db")
+	return nil
+}
 
 func (d *databaseCmd) printRun(*kingpin.ParseContext) error {
 	database.NewJutgeDB(d.DBFile).Print()
@@ -48,5 +51,6 @@ func (d *databaseCmd) queryRun(*kingpin.ParseContext) error {
 	return err
 }
 func (d *databaseCmd) importRun(*kingpin.ParseContext) error {
+
 	return database.NewJutgeDB(d.DBFile).ImportZip(d.zipFile)
 }
