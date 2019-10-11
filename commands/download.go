@@ -16,12 +16,12 @@ type download struct {
 	Overwrite bool
 }
 
-// NewDownload return download object
+// NewDownload returns download object
 func NewDownload() *download {
 	return &download{Overwrite: false}
 }
 
-// DownloadProblems download all problems from d.codes
+// DownloadProblems downloads all problems from `codes []string` concurrently
 func (d *download) DownloadProblems(codes []string) error {
 	var wg sync.WaitGroup
 	sem := make(chan bool, conf.concurrency)
@@ -44,7 +44,7 @@ func (d *download) DownloadProblems(codes []string) error {
 	return nil
 }
 
-// downloadProblem download problem data to Conf.WorkDir
+// downloadProblem downloads problem data and stores it in Conf.WorkDir
 func (d *download) DownloadProblem(code string) error {
 	rq := req.New()
 

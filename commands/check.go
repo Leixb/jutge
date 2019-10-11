@@ -11,12 +11,12 @@ import (
 
 type check struct{}
 
-// NewCheck return check object
+// NewCheck returns check object
 func NewCheck() *check {
 	return &check{}
 }
 
-// CheckProblems check all problems in codes
+// CheckProblems concurrently runs CheckProblem() for all problems in `codes []string`
 func (c *check) CheckProblems(codes []string) error {
 	var wg sync.WaitGroup
 	sem := make(chan bool, conf.concurrency)
@@ -44,7 +44,7 @@ func (c *check) CheckProblems(codes []string) error {
 	return nil
 }
 
-// CheckProblem get problem veredict
+// CheckProblem gets veredict for the given problem code
 func (c *check) CheckProblem(code string) (string, error) {
 	rq, err := getReq()
 	if err != nil {
@@ -68,7 +68,7 @@ func (c *check) CheckProblem(code string) (string, error) {
 	return veredict, nil
 }
 
-// CheckSubmission get submission veredict
+// CheckSubmission gets submission veredict for the given code and submission number
 func (c *check) CheckSubmission(code string, submission int) (string, error) {
 	rq, err := getReq()
 	if err != nil {
@@ -92,6 +92,7 @@ func (c *check) CheckSubmission(code string, submission int) (string, error) {
 	return veredict, nil
 }
 
+// GetNumSubmissions gets the number of submissions for the given code
 func (c *check) GetNumSubmissions(code string) (int, error) {
 	rq, err := getReq()
 	if err != nil {
@@ -110,6 +111,7 @@ func (c *check) GetNumSubmissions(code string) (int, error) {
 	return strconv.Atoi(submissions)
 }
 
+// CheckLast gets veredict of last submission for the given code
 func (c *check) CheckLast(code string) (string, error) {
 	n, err := c.GetNumSubmissions(code)
 	if err != nil {

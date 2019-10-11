@@ -26,10 +26,12 @@ func init() {
 	conf.concurrency = 3
 }
 
+// SetWorkDir sets the location where to download and check for problem files and the database
 func SetWorkDir(dir string) {
 	conf.workDir = dir
 }
 
+// SetConcurrency sets the number of concurrent goroutines that can be run at the same time
 func SetConcurrency(n uint) {
 	conf.concurrency = n
 	if n == 0 {
@@ -37,26 +39,33 @@ func SetConcurrency(n uint) {
 	}
 }
 
+// Setregex sets the regex used to validate and extract problem codes from filenames
 func SetRegex(regex string) (err error) {
 	conf.regex, err = regexp.Compile(regex)
 	return
 }
 
+// Concurrency returns reference to conf.concurrency. Use with caution.
 func Concurrency() *uint {
 	return &conf.concurrency
 }
 
+// Regex returns reference to conf.regex. Use with caution.
 func Regex() **regexp.Regexp {
 	return &conf.regex
 }
 
+// WorkDir returns reference to conf.WorkDir. Use with caution.
 func WorkDir() *string {
 	return &conf.workDir
 }
 
+// SetUsername sets username for login
 func SetUsername(username string) {
 	conf.username = username
 }
+
+// SetPassword sets password for login
 func SetPassword(password string) {
 	conf.password = password
 }
