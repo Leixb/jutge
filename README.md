@@ -1,4 +1,9 @@
-# Jutge CLI [![Build Status](https://travis-ci.com/Leixb/jutge.svg?branch=master)](https://travis-ci.com/Leixb/jutge) [![GoDoc](https://godoc.org/github.com/Leixb/jutge?status.svg)](https://godoc.org/github.com/Leixb/jutge)
+# Jutge CLI
+![GitHub](https://img.shields.io/github/license/Leixb/jutge)
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/Leixb/jutge)
+[![Build Status](https://travis-ci.com/Leixb/jutge.svg?branch=master)](https://travis-ci.com/Leixb/jutge)
+[![Go Report Card](https://goreportcard.com/badge/github.com/Leixb/jutge)](https://goreportcard.com/report/github.com/Leixb/jutge)
+[![GoDoc](https://godoc.org/github.com/Leixb/jutge?status.svg)](https://godoc.org/github.com/Leixb/jutge)
 
 Easily create, test, upload and check problems from [jutge.org](https://jutge.org) without leaving the terminal.
 
