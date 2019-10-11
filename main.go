@@ -8,7 +8,7 @@ import (
 	"github.com/leixb/jutge/commands"
 )
 
-type JutgeCommand interface {
+type jutgeCommand interface {
 	ConfigCommand(*kingpin.Application)
 	Run(*kingpin.ParseContext) error
 }
@@ -48,7 +48,7 @@ func main() {
 
 	app.Action(setUsername).Action(setPass)
 
-	commands := []JutgeCommand{
+	commands := []jutgeCommand{
 		&downloadCmd{},
 		&testCmd{},
 		&uploadCmd{},
