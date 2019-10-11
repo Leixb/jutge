@@ -90,6 +90,9 @@ func newInstance(ldata loginData) (*Credentials, error) {
 		return nil, err
 	}
 	cred, err = login(ldata)
+	if err != nil {
+		return nil, err
+	}
 
 	err = cred.saveTmp()
 	if err != nil {
@@ -225,6 +228,10 @@ func (a *Credentials) loadTmp() bool {
 	var save persist
 
 	data, err := ioutil.ReadAll(file)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "readall", err)
+		return false
+	}
 
 	err = json.Unmarshal(data, &save)
 	if err != nil {

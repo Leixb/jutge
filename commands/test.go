@@ -158,5 +158,5 @@ func (t *test) runCommand(command, inputFile string) ([]byte, error) {
 
 	output, err := cmd.CombinedOutput()
 
-	return output, nil
+	return output, err
 }

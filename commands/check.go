@@ -52,7 +52,13 @@ func (c *check) CheckProblem(code string) (string, error) {
 	}
 
 	r, err := rq.Get("https://jutge.org/problems/" + code)
+	if err != nil {
+		return "", err
+	}
 	doc, err := goquery.NewDocumentFromResponse(r.Response())
+	if err != nil {
+		return "", err
+	}
 
 	veredict := doc.Find(".equal > div:nth-child(1) > div:nth-child(1) > div:nth-child(1)").Text()
 
@@ -76,7 +82,13 @@ func (c *check) CheckSubmission(code string, submission int) (string, error) {
 	}
 
 	r, err := rq.Get(fmt.Sprintf("https://jutge.org/problems/%s/submissions/S%03d", code, submission))
+	if err != nil {
+		return "", err
+	}
 	doc, err := goquery.NewDocumentFromResponse(r.Response())
+	if err != nil {
+		return "", err
+	}
 
 	veredict := doc.Find("div.col-sm-6:nth-child(1) > div:nth-child(1) > div:nth-child(2) > table:nth-child(1) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(2) > table:nth-child(1) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(2) > a:nth-child(1)").Text()
 
@@ -100,7 +112,13 @@ func (c *check) GetNumSubmissions(code string) (int, error) {
 	}
 
 	r, err := rq.Get("https://jutge.org/problems/" + code)
+	if err != nil {
+		return 0, err
+	}
 	doc, err := goquery.NewDocumentFromResponse(r.Response())
+	if err != nil {
+		return 0, err
+	}
 
 	submissions := doc.Find(".equal > div:nth-child(1) > div:nth-child(1) > div:nth-child(2) > table:nth-child(1) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(3) > dl:nth-child(1) > dd:nth-child(2)").Text()
 

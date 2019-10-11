@@ -63,6 +63,9 @@ func (d *download) DownloadProblem(code string) error {
 	}
 
 	file, err := ioutil.TempFile("", "jutge_problem_*.zip")
+	if err != nil {
+		return err
+	}
 	defer os.Remove(file.Name())
 
 	err = r.ToFile(file.Name())
