@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
+	"regexp"
 
 	"gopkg.in/alecthomas/kingpin.v2"
 
@@ -21,10 +21,12 @@ func isMn(r rune) bool {
 	return unicode.Is(unicode.Mn, r) // Mn: nonspacing marks
 }
 
+var reg = regexp.MustCompile(`[^a-zA-Z0-9_\-.]`)
+
 func normalizeString(s string) string {
 	t := transform.Chain(norm.NFD, transform.RemoveFunc(isMn), norm.NFC)
 	res, _, _ := transform.String(t, s)
-	res = strings.ReplaceAll(res, " ", "_")
+	res = reg.ReplaceAllString(res, "_")
 	return res
 }
 
