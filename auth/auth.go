@@ -50,7 +50,7 @@ type persist struct {
 }
 
 // GetInstance creates and returns a new Credentials instance.
-// It accepts at most 2 parameters: email and password. If any of them are omited
+// It accepts at most 2 parameters: email and password. If any of them are omitted
 // the program will prompt the user to input them through stdout.
 // Note that you can not omit the email and not the password.
 // It panics when login fails.

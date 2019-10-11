@@ -4,7 +4,7 @@ import (
 	"errors"
 )
 
-// getCode match regex agains string and return matching code
+// getCode match regex against string and return matching code
 func getCode(fileName string) (string, error) {
 	code := conf.regex.FindString(fileName)
 	if len(code) == 0 {
