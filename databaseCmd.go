@@ -16,10 +16,10 @@ type databaseCmd struct {
 }
 
 func (d *databaseCmd) ConfigCommand(app *kingpin.Application) {
-	cmd := app.Command("db", "Manage local database").Action(d.Run)
+	cmd := app.Command("db", "Manage local database (use with caution)").Action(d.Run)
 
 	//SubCommands
-	cmd.Command("print", "Print database contents").Action(d.printRun)
+	cmd.Command("print", "Print contents of database").Action(d.printRun)
 
 	addCmd := cmd.Command("add", "Add entry to database").Action(d.addRun)
 	addCmd.Arg("code", "Proble ID").Required().StringVar(&d.code)
@@ -28,7 +28,7 @@ func (d *databaseCmd) ConfigCommand(app *kingpin.Application) {
 	queryCmd := cmd.Command("query", "Query title from database").Action(d.queryRun)
 	queryCmd.Arg("code", "Proble ID").Required().StringVar(&d.code)
 
-	importCmd := cmd.Command("import", "Import data from zip").Action(d.importRun)
+	importCmd := cmd.Command("import", "Import data from zip (this is quite usless atm)").Action(d.importRun)
 	importCmd.Arg("zipFile", "Zip file").Required().StringVar(&d.zipFile)
 
 }

@@ -34,7 +34,7 @@ type newCmd struct {
 }
 
 func (n *newCmd) ConfigCommand(app *kingpin.Application) {
-	cmd := app.Command("new", "Create file for problem").
+	cmd := app.Command("new", "Create a new file for a problem in the current directory").
 		Action(n.Run)
 
 	// Arguments

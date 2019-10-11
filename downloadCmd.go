@@ -11,12 +11,12 @@ type downloadCmd struct {
 }
 
 func (d *downloadCmd) ConfigCommand(app *kingpin.Application) {
-	cmd := app.Command("download", "Download problem files from jutge.org").
+	cmd := app.Command("download", "Download problem files from jutge").
 		Alias("down").
 		Action(d.Run)
 
 	// Arguments
-	cmd.Arg("code", "Codes of problems to download").Required().StringsVar(&d.codes)
+	cmd.Arg("code", "Code(s) of problem(s) to download").Required().StringsVar(&d.codes)
 
 	// Flags
 	cmd.Flag("overwrite", "Overwrite existing files").BoolVar(&d.overwrite)

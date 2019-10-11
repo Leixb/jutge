@@ -28,10 +28,10 @@ func setPass(*kingpin.ParseContext) error {
 }
 
 func main() {
-	app := kingpin.New("jutge", "Jutge.org CLI").
+	app := kingpin.New("jutge", "A jutge.org client in your terminal!").
 		DefaultEnvars().
 		Author("Leixb").
-		Version("v0.2.0")
+		Version("v0.3.0")
 
 	app.Flag("work-dir",
 		"Directory to save jutge files").
@@ -41,7 +41,7 @@ func main() {
 		"Maximum concurrent routines").
 		Default("3").
 		UintVar(commands.Concurrency())
-	app.Flag("regex", "Regular expression to match code").RegexpVar(commands.Regex())
+	app.Flag("regex", "Regular expression used to validate and find problem codes in filenames").RegexpVar(commands.Regex())
 
 	username = app.Flag("user", "Username").String()
 	password = app.Flag("pass", "Password").String()
