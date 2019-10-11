@@ -5,7 +5,7 @@ import (
 
 	"gopkg.in/alecthomas/kingpin.v2"
 
-	"github.com/leixb/jutge/commands"
+	"github.com/Leixb/jutge/commands"
 )
 
 type jutgeCommand interface {

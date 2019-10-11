@@ -3,7 +3,7 @@ package commands
 import (
 	"regexp"
 
-	"github.com/leixb/jutge/auth"
+	"github.com/Leixb/jutge/auth"
 
 	"github.com/imroc/req"
 )

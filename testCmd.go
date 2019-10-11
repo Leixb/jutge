@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/leixb/jutge/commands"
+	"github.com/Leixb/jutge/commands"
 	"gopkg.in/alecthomas/kingpin.v2"
 )
 

@@ -6,8 +6,8 @@ import (
 
 	"gopkg.in/alecthomas/kingpin.v2"
 
-	"github.com/leixb/jutge/commands"
-	"github.com/leixb/jutge/database"
+	"github.com/Leixb/jutge/commands"
+	"github.com/Leixb/jutge/database"
 )
 
 type databaseCmd struct {
