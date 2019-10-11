@@ -54,6 +54,7 @@ func main() {
 		&uploadCmd{},
 		&checkCmd{},
 		&databaseCmd{},
+		&newCmd{},
 	}
 
 	for _, command := range commands {
