@@ -74,4 +74,4 @@ There are 6 commands:
 
 # Sample usage
 
-[![asciicast](https://asciinema.org/a/kQShUDn3srF9q69iqMyzFyLaP.svg)](https://asciinema.org/a/kQShUDn3srF9q69iqMyzFyLaP)
+[![asciicast](https://asciinema.org/a/dgHDQPtAqXyO5mGfDbJWzE8Ex.svg)](https://asciinema.org/a/dgHDQPtAqXyO5mGfDbJWzE8Ex)
