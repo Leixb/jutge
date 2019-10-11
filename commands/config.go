@@ -39,7 +39,7 @@ func SetConcurrency(n uint) {
 	}
 }
 
-// Setregex sets the regex used to validate and extract problem codes from filenames
+// SetRegex sets the regex used to validate and extract problem codes from filenames
 func SetRegex(regex string) (err error) {
 	conf.regex, err = regexp.Compile(regex)
 	return
