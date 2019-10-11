@@ -21,6 +21,7 @@ type jutgeDB struct {
 	ro     bool
 }
 
+// NewJutgeDB returns jutgeDB object
 func NewJutgeDB(dbFile string) *jutgeDB {
 	return &jutgeDB{dbFile, nil, true}
 }
