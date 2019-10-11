@@ -27,6 +27,12 @@ export JUTGE_WORK_DIR="${HOME}/Documents/jutge/"
 export JUTGE_USER="example@example.com"
 ```
 
+If you want to use the `new` command you need to add the file `jutge.db` into your `$JUTGE_WORK_DIR` . You can download it directly from this repo with curl:
+
+```bash
+curl -o "${JUTGE_WORK_DIR}/jutge.db" https://raw.githubusercontent.com/Leixb/jutge/master/jutge.db
+```
+
 ## Scripting
 A very common task is to compile and then test the binary, or to compile test and then upload a file. This cannot be done directly with `jutge` but is fairly easy to do it with some basic shell scripting. For example, you can declare the following functions in your shell configuration file (`~/.bashrc`):
 
