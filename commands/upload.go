@@ -18,12 +18,12 @@ type upload struct {
 	codes map[string]bool
 }
 
-// NewUpload return upload object
+// NewUpload returns upload object
 func NewUpload() *upload {
 	return &upload{codes: make(map[string]bool), Compiler: "G++11"}
 }
 
-// GetCompilers list with all valid compilers for upload
+// GetCompilers returns a list with all valid compilers for upload
 func GetCompilers() []string {
 	return compilers
 }
@@ -36,7 +36,7 @@ var compilers = []string{
 	"Ruby", "RunHaskell", "RunPython", "Stalin", "Verilog", "WS",
 }
 
-// UploadFiles upload all files in files
+// UploadFiles concurrently uploads all files in `files []string`
 func (u *upload) UploadFiles(files []string) error {
 	var err error
 
@@ -79,7 +79,7 @@ func (u *upload) UploadFiles(files []string) error {
 	return err
 }
 
-// UploadFile submit file to jutge.org
+// UploadFile submits file to jutge.org for the problem given by code
 func (u *upload) UploadFile(fileName, code string) error {
 	token, err := getToken()
 	if err != nil {
@@ -114,7 +114,11 @@ func (u *upload) UploadFile(fileName, code string) error {
 	return err
 }
 
-// CheckUploaded checks veredict of uploaded problems
+// CheckUploaded checks the veredict of uploaded problems
+//
+// Bugs(): It checks the last submission for every problem code,
+// meaning that if you submit more than 1 solution for the same problem,
+// it will only check one of the veredicts.
 func (u *upload) CheckUploaded() error {
 	var wg sync.WaitGroup
 	sem := make(chan bool, conf.concurrency)

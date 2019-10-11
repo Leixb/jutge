@@ -18,12 +18,12 @@ type test struct {
 	DownloadMissing bool
 }
 
-// NewTest return test object
+// NewTest returns test object
 func NewTest() *test {
 	return &test{Code: "", DownloadMissing: false}
 }
 
-// TestPrograms Test all the programs in t.programs
+// TestPrograms concurrently tests all the programs in `programs []string`
 func (t *test) TestPrograms(programs []string) (passedTotal, countTotal int, err error) {
 	for _, fileName := range programs {
 
@@ -52,7 +52,9 @@ func (t *test) TestPrograms(programs []string) (passedTotal, countTotal int, err
 	return
 }
 
-// TestProgram Test program fileName against all sample files in Conf.WorkDir
+// TestProgram tests program fileName against all sample files for the given code found at Conf.WorkDir
+// If there is no folder for the code, it tries to download the files from jutge.org (Downloading can be
+// disabled by setting t.DownloadMissing to False).
 func (t *test) TestProgram(code, fileName string) (passed, count int, err error) {
 	folder := filepath.Join(conf.workDir, code)
 
@@ -99,7 +101,8 @@ func (t *test) TestProgram(code, fileName string) (passed, count int, err error)
 	return
 }
 
-// runTest test program against a single sample
+// runTest tests program against a single sample. If the output of the program
+// does not match the expected output it prints an error and a diff
 func (t *test) runTest(command, iFile string) (bool, error) {
 	output, err := t.runCommand(command, iFile)
 	if err != nil {

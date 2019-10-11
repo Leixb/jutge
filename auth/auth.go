@@ -1,7 +1,5 @@
 package auth
 
-// package main
-
 import (
 	"encoding/json"
 	"errors"
@@ -17,7 +15,8 @@ import (
 	"github.com/imroc/req"
 )
 
-// TokenNotFound error
+// TokenNotFound error returned when the parser can't find the TokenUID, this usually means
+// that the login failed or cookies expired
 type TokenNotFound struct{}
 
 func (*TokenNotFound) Error() string { return "Token uid not found" }
@@ -27,12 +26,16 @@ var (
 	once      sync.Once
 )
 
-// Auth object
+// Credentials object that holds the necessary information to make a request.
+// It does not save the user password, only a tooken and cookies.
 type Credentials struct {
 	Username string
 
+	// TokenUID is needed when uploading files
 	TokenUID string
-	R        *req.Req
+
+	// R is a imroc/req.Req that allows to perform requests with the proper cookies set.
+	R *req.Req
 }
 
 type loginData struct {
@@ -46,7 +49,11 @@ type persist struct {
 	Email     string `json:"email"`
 }
 
-// Create new Auth instance
+// GetInstance creates and returns a new Credentials instance.
+// It accepts at most 2 parameters: email and password. If any of them are omited
+// the program will prompt the user to input them through stdout.
+// Note that you can not omit the email and not the password.
+// It panics when login fails.
 func GetInstance(creds ...string) *Credentials {
 	once.Do(func() {
 		if len(creds) > 2 {
@@ -86,7 +93,7 @@ func newInstance(ldata loginData) (*Credentials, error) {
 
 	err = cred.saveTmp()
 	if err != nil {
-		fmt.Println("Save credentials error:", err)
+		fmt.Fprintln(os.Stderr, "Save credentials error:", err)
 	}
 	return cred, nil
 }
@@ -210,7 +217,7 @@ func (a *Credentials) saveTmp() error {
 func (a *Credentials) loadTmp() bool {
 	file, err := os.Open(tmpFilename())
 	if err != nil {
-		fmt.Println("open", err)
+		fmt.Fprintln(os.Stderr, "open", err)
 		return false
 	}
 	defer file.Close()
@@ -221,13 +228,13 @@ func (a *Credentials) loadTmp() bool {
 
 	err = json.Unmarshal(data, &save)
 	if err != nil {
-		fmt.Println("unmarshall", err)
+		fmt.Fprintln(os.Stderr, "unmarshall", err)
 		return false
 	}
 
 	u, err := url.Parse("https://jutge.org")
 	if err != nil {
-		fmt.Println("parse", err)
+		fmt.Fprintln(os.Stderr, "parse", err)
 		return false
 	}
 
@@ -243,9 +250,9 @@ func (a *Credentials) loadTmp() bool {
 	if err != nil {
 		switch err.(type) {
 		case *TokenNotFound:
-			fmt.Println("Cookie Expired")
+			fmt.Fprintln(os.Stderr, "Cookie Expired")
 		default:
-			fmt.Println("Connection error")
+			fmt.Fprintln(os.Stderr, "Connection error")
 		}
 		return false
 	}
