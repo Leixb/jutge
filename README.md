@@ -76,7 +76,7 @@ There are 6 commands:
   - `new`: creates a new file for a problem (the filename contains the problem code followed by the problem title without accents or spaces e.g.: `P71753_ca_Maxim_de_cada_sequencia.cpp`)
   - `test`: tests an executable file against jutge samples (it will download the samples if needed)
   - `upload`: submits a problem to jutge
-- Misc (rarely used):
+- Rarely used commands:
   - `check`: check veredict of a submission
   - `download`: downloads sample test cases from jutge (usually not used since tests handles downloads when needed)
   - `db`: provies some sub commands to edit the the correspondence between codes and titles.
