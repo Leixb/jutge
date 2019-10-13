@@ -1,3 +1,11 @@
 language: go
 go:
 - 1.13.x
+deploy:
+  provider: releases
+  api_key:
+    secure: kdhsrpw0Ecb9CaGbApgFclc/3zTTuFw6ALg/ClpZiu1WhV/4fnpHDSKAt51som6us5zRkuGJCBC47RSFEhF6VtH1QTfvrElEJsQEWNMa1jRHKAD+zP02nEBuA8Vp5HhvULJnvDHoJLyOqVI3U1+chtgV4HydcwGGfZxtkNltmMbqRc+BF98//b/g3x1+vjZhqiIKNyyTGiPZJkrrp9HA3AEFmbYoj2Cv9xyGY8YW3jFAki7RMaPqlvb3fyrKqwKNc8RRZiA5aCZMDgZj1mPj/dkMYhIZj7ox/0gZwYskIB9kQ44LCpjfDHkGuzdF6SwrwL4HY3ITQCW5WmpOVeuEbtU5bryOOvomgn7t6oBhodE7h3wpwWMY1jsh8I+eiGxM6f0xY/4M/ZlmdqIaS8L7HvzPo4X8IBlWcHS5aLh9wMwcsxZoTnfIG9RCPduddHlS/ZfhZKRFb11eOLvnQ2vt30PyM7ecvOfgdYwh1JWAS5fJ1JfAhrmgRcmmNPF+pCurdhGOHlbkhySyglk3cg2ikvQbImCZtEWbe3U4vY+1Vz89Taycm3NWygaaM9dLk2PNqFDFkAA/beQmiLyi1KK7Ohvw05OQGMgaLxWq6aRQdBSna/FN5oXVY1sBka3epLSRL9LRUJNKreIvzhhxct2ZtJ2sQ/OHEEsHEj7UUCsQEWA=
+  file: jutge
+  on:
+    repo: Leixb/jutge
+    tags: true
