@@ -1,11 +1,10 @@
 # Jutge CLI
-![GitHub](https://img.shields.io/github/license/Leixb/jutge)
-![GitHub release (latest by date)](https://img.shields.io/github/v/release/Leixb/jutge)
-[![Build Status](https://travis-ci.com/Leixb/jutge.svg?branch=master)](https://travis-ci.com/Leixb/jutge)
+
+[![Build Status](https://github.com/Leixb/jutge/workflows/build/badge.svg)](https://github.com/Leixb/jutge/actions)
+[![LICENSE](https://img.shields.io/github/license/Leixb/jutge)](https://github.com/Leixb/jutge/blob/master/LICENSE)
+[![GitHub release (latest by date)](https://img.shields.io/github/v/release/Leixb/jutge)](https://github.com/Leixb/jutge/releases/latest)
 [![HitCount](http://hits.dwyl.io/Leixb/jutge.svg)](http://hits.dwyl.io/Leixb/jutge)
 [![Go Report Card](https://goreportcard.com/badge/github.com/Leixb/jutge)](https://goreportcard.com/report/github.com/Leixb/jutge)
-[![CodeFactor](https://www.codefactor.io/repository/github/leixb/jutge/badge)](https://www.codefactor.io/repository/github/leixb/jutge)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/ab598b6be10640e5939cc4b197422acd)](https://www.codacy.com/manual/abone9999/jutge?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Leixb/jutge&amp;utm_campaign=Badge_Grade)
 [![GoDoc](https://godoc.org/github.com/Leixb/jutge?status.svg)](https://godoc.org/github.com/Leixb/jutge)
 
 Easily create, test, upload and check problems from [jutge.org](https://jutge.org) without leaving the terminal.
@@ -85,7 +84,3 @@ There are 6 commands:
    - `db`: provies some sub commands to edit the the correspondence between codes and titles.
   
   If you want help for any of the commands just run `jutge command --help` to view all the options and their descriptions.
-
-## Sample usage
-
-[![asciicast](https://asciinema.org/a/dgHDQPtAqXyO5mGfDbJWzE8Ex.svg)](https://asciinema.org/a/dgHDQPtAqXyO5mGfDbJWzE8Ex)
