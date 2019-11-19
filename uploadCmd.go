@@ -25,7 +25,7 @@ func (u *uploadCmd) ConfigCommand(app *kingpin.Application) {
 	cmd.Arg("file", "File to upload").Required().ExistingFilesVar(&u.files)
 
 	// Flags
-	cmd.Flag("compiler", "Compiler to use").Short('C').Default("G++11").EnumVar(&u.compiler, commands.GetCompilers()...)
+	cmd.Flag("compiler", "Compiler to use").Short('C').Default("AUTO").EnumVar(&u.compiler, commands.GetCompilers()...)
 	cmd.Flag("code", "Problem code").Short('c').StringVar(&u.code)
 	cmd.Flag("annotation", "Annotation").Short('a').Default("Uploaded with jutge_cli go").StringVar(&u.annotation)
 	cmd.Flag("check", "Check veredict after upload").BoolVar(&u.check)

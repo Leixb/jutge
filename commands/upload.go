@@ -3,6 +3,7 @@ package commands
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"sync"
 	"time"
 
@@ -29,11 +30,41 @@ func GetCompilers() []string {
 }
 
 var compilers = []string{
-	"BEEF", "Chicken", "CLISP", "Erlang", "F2C", "FBC", "FPC", "G++",
+	"AUTO", "BEEF", "Chicken", "CLISP", "Erlang", "F2C", "FBC", "FPC", "G++",
 	"G++11", "GCC", "GCJ", "GDC", "GFortran", "GHC", "GNAT", "Go", "GObjC",
 	"GPC", "Guile", "IVL08", "JDK", "Lua", "MakePRO2", "MonoCS", "nodejs",
 	"P1++", "P2C", "Perl", "PHP", "PRO2", "Python", "Python3", "Quiz", "R",
 	"Ruby", "RunHaskell", "RunPython", "Stalin", "Verilog", "WS",
+}
+
+var associatedCompilers = map[string]string{
+	".ada":  "GNAT",
+	".bas":  "FBC",
+	".bf":   "BEEF",
+	".c":    "GCC",
+	".cc":   "P1++",
+	".cpp":  "G++11",
+	".cs":   "MonoCS",
+	".d":    "GDC",
+	".erl":  "Erlang",
+	".f":    "GFortran",
+	".go":   "Go",
+	".hs":   "GHC",
+	".java": "JDK",
+	".js":   "nodejs",
+	".lisp": "CLISP",
+	".lua":  "Lua",
+	".m":    "GObjC",
+	".pas":  "FPC",
+	".php":  "PHP",
+	".pl":   "Perl",
+	".py":   "Python3",
+	".py2":  "Python",
+	".r":    "R",
+	".rb":   "Ruby",
+	".scm":  "Chicken",
+	".v":    "Verilog",
+	".ws":   "WS",
 }
 
 // UploadFiles concurrently uploads all files in `files []string`
@@ -79,6 +110,17 @@ func (u *upload) UploadFiles(files []string) error {
 	return err
 }
 
+func guessCompiler(fileName string) string {
+	if compiler, ok := associatedCompilers[filepath.Ext(fileName)]; ok {
+		fmt.Println(" - compiler: " + compiler)
+		return compiler
+	}
+	fmt.Printf(" ! Warning: could not guess compiler from extension for file %s, defaulting to G++11\n", fileName)
+	fmt.Println(filepath.Ext(fileName))
+	panic("!!!")
+	//return "G++11"
+}
+
 // UploadFile submits file to jutge.org for the problem given by code
 func (u *upload) UploadFile(fileName, code string) error {
 	token, err := getToken()
@@ -86,9 +128,14 @@ func (u *upload) UploadFile(fileName, code string) error {
 		return err
 	}
 
+	compiler := u.Compiler
+	if compiler == "AUTO" {
+		compiler = guessCompiler(fileName)
+	}
+
 	param := req.Param{
 		"annotation":  u.Annotation,
-		"compiler_id": u.Compiler,
+		"compiler_id": compiler,
 		"submit":      "submit",
 		"token_uid":   token,
 	}

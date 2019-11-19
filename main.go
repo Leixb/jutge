@@ -31,7 +31,7 @@ func main() {
 	app := kingpin.New("jutge", "A jutge.org client in your terminal!").
 		DefaultEnvars().
 		Author("Leixb").
-		Version("v0.3.0")
+		Version("v0.3.1")
 
 	app.Flag("work-dir",
 		"Directory to save jutge files").
