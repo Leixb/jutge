@@ -28,7 +28,7 @@ func (d *databaseCmd) ConfigCommand(app *kingpin.Application) {
 	queryCmd := cmd.Command("query", "Query title from database").Action(d.queryRun)
 	queryCmd.Arg("code", "Proble ID").Required().StringVar(&d.code)
 
-	importCmd := cmd.Command("import", "Import data from zip (this is quite usless atm)").Action(d.importRun)
+	importCmd := cmd.Command("import", "Import data from zip (this is quite useless atm)").Action(d.importRun)
 	importCmd.Arg("zipFile", "Zip file").Required().StringVar(&d.zipFile)
 
 }
