@@ -123,7 +123,7 @@ func (t *test) runTest(command, iFile string) (bool, error) {
 
 	// Results don't match -> output diff
 	dmp := diffmatchpatch.New()
-	diffs := dmp.DiffMain(string(expected), string(output), true)
+	diffs := dmp.DiffMain(string(output), string(expected), true)
 
 	str := fmt.Sprintf(" !  FAILED: %s\n", iFile)
 	str = fmt.Sprintf("%s ===== OUTPUT =====\n%s\n", str, string(output))
