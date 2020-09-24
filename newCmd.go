@@ -3,32 +3,12 @@ package main
 import (
 	"fmt"
 	"os"
-	"path/filepath"
-	"regexp"
 
 	"gopkg.in/alecthomas/kingpin.v2"
 
 	"github.com/Leixb/jutge/commands"
-	"github.com/Leixb/jutge/database"
-
-	"unicode"
-
-	"golang.org/x/text/transform"
-	"golang.org/x/text/unicode/norm"
 )
 
-func isMn(r rune) bool {
-	return unicode.Is(unicode.Mn, r) // Mn: nonspacing marks
-}
-
-var reg = regexp.MustCompile(`[^a-zA-Z0-9_\-.]`)
-
-func normalizeString(s string) string {
-	t := transform.Chain(norm.NFD, transform.RemoveFunc(isMn), norm.NFC)
-	res, _, _ := transform.String(t, s)
-	res = reg.ReplaceAllString(res, "_")
-	return res
-}
 
 type newCmd struct {
 	code, ext string
@@ -48,15 +28,14 @@ func (n *newCmd) ConfigCommand(app *kingpin.Application) {
 }
 
 func (n *newCmd) Run(*kingpin.ParseContext) error {
-	dbFile := filepath.Join(*commands.WorkDir(), "jutge.db")
-	problemName, err := database.NewJutgeDB(dbFile).Query(n.code)
-	if err != nil {
-		return err
-	}
+    cmd := commands.NewNewfile()
+    cmd.Code = n.code
+    cmd.Extension = n.ext
 
-	problemName = normalizeString(problemName)
-
-	filename := fmt.Sprintf("%s_%s.%s", n.code, problemName, n.ext)
+    filename, err := cmd.GetFilename()
+    if err != nil {
+        return err
+    }
 
 	if !n.dryRun {
 		os.OpenFile(filename, os.O_RDONLY|os.O_CREATE, 0666)

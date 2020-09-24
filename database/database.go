@@ -46,6 +46,9 @@ func (jDB *jutgeDB) initRead() (err error) {
 
 func (jDB *jutgeDB) initWrite() (err error) {
 	if jDB.db == nil || jDB.ro {
+        if jDB != nil {
+            jDB.db.Close()
+        }
 		jDB.db, err = bolt.Open(jDB.dbFile, 0600, nil)
 		jDB.ro = false
 		jDB.db.Update(initBuckets)
