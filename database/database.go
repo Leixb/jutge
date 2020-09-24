@@ -8,6 +8,7 @@ import (
 
 	bolt "go.etcd.io/bbolt"
 	"gopkg.in/yaml.v2"
+	"github.com/imroc/req"
 )
 
 func initBuckets(tx *bolt.Tx) error {
@@ -137,4 +138,17 @@ func (jDB *jutgeDB) ImportZip(filename string) error {
 		}
 	}
 	return nil
+}
+
+func (jDB *jutgeDB) Download() error {
+    if jDB.db != nil {
+        jDB.db.Close()
+    }
+    url := "https://raw.githubusercontent.com/Leixb/jutge/master/jutge.db"
+    r, err := req.Get(url)
+    if err != nil {
+        return err
+    }
+
+    return r.ToFile(jDB.dbFile)
 }

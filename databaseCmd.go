@@ -31,6 +31,7 @@ func (d *databaseCmd) ConfigCommand(app *kingpin.Application) {
 	importCmd := cmd.Command("import", "Import data from zip (this is quite useless atm)").Action(d.importRun)
 	importCmd.Arg("zipFile", "Zip file").Required().StringVar(&d.zipFile)
 
+    cmd.Command("download", "Download jutge.db from github and overwrite local db").Action(d.downloadRun)
 }
 
 func (d *databaseCmd) Run(*kingpin.ParseContext) error {
@@ -53,4 +54,8 @@ func (d *databaseCmd) queryRun(*kingpin.ParseContext) error {
 func (d *databaseCmd) importRun(*kingpin.ParseContext) error {
 
 	return database.NewJutgeDB(d.DBFile).ImportZip(d.zipFile)
+}
+func (d *databaseCmd) downloadRun(*kingpin.ParseContext) error {
+    database.NewJutgeDB(d.DBFile).Download()
+	return nil
 }
