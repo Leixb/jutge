@@ -30,11 +30,12 @@ func GetCompilers() []string {
 }
 
 var compilers = []string{
-	"AUTO", "BEEF", "Chicken", "CLISP", "Erlang", "F2C", "FBC", "FPC", "G++",
-	"G++11", "GCC", "GCJ", "GDC", "GFortran", "GHC", "GNAT", "Go", "GObjC",
-	"GPC", "Guile", "IVL08", "JDK", "Lua", "MakePRO2", "MonoCS", "nodejs",
-	"P1++", "P2C", "Perl", "PHP", "PRO2", "Python", "Python3", "Quiz", "R",
-	"Ruby", "RunHaskell", "RunPython", "Stalin", "Verilog", "WS",
+	"AUTO", "BEEF", "Chicken", "Clang", "Clang++17", "CLISP", "Crystal",
+	"Erlang", "F2C", "FBC", "FPC", "G++", "G++11", "G++17", "GCC", "GCJ",
+	"GDC", "GFortran", "GHC", "GNAT", "Go", "GObjC", "GPC", "Guile", "IVL08",
+	"JDK", "Lua", "MakePRO2", "MonoCS", "Nim", "nodejs", "P1++", "P2C", "Perl",
+	"PHP", "PRO2", "Python", "Python3", "Quiz", "R", "Ruby", "RunHaskell",
+	"RunPython", "Rust", "Stalin", "Verilog", "WS",
 }
 
 var associatedCompilers = map[string]string{
@@ -44,6 +45,7 @@ var associatedCompilers = map[string]string{
 	".c":    "GCC",
 	".cc":   "P1++",
 	".cpp":  "G++11",
+	".cr":   "Crystal",
 	".cs":   "MonoCS",
 	".d":    "GDC",
 	".erl":  "Erlang",
@@ -55,6 +57,7 @@ var associatedCompilers = map[string]string{
 	".lisp": "CLISP",
 	".lua":  "Lua",
 	".m":    "GObjC",
+	".nim":  "Nim",
 	".pas":  "FPC",
 	".php":  "PHP",
 	".pl":   "Perl",
