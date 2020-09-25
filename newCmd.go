@@ -9,7 +9,6 @@ import (
 	"github.com/Leixb/jutge/commands"
 )
 
-
 type newCmd struct {
 	code, ext string
 	dryRun    bool
@@ -28,14 +27,14 @@ func (n *newCmd) ConfigCommand(app *kingpin.Application) {
 }
 
 func (n *newCmd) Run(*kingpin.ParseContext) error {
-    cmd := commands.NewNewfile()
-    cmd.Code = n.code
-    cmd.Extension = n.ext
+	cmd := commands.NewNewfile()
+	cmd.Code = n.code
+	cmd.Extension = n.ext
 
-    filename, err := cmd.GetFilename()
-    if err != nil {
-        return err
-    }
+	filename, err := cmd.GetFilename()
+	if err != nil {
+		return err
+	}
 
 	if !n.dryRun {
 		os.OpenFile(filename, os.O_RDONLY|os.O_CREATE, 0666)

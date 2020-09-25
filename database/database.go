@@ -4,11 +4,12 @@ import (
 	"archive/zip"
 	"bytes"
 	"fmt"
+	"os"
 	"path/filepath"
 
+	"github.com/imroc/req"
 	bolt "go.etcd.io/bbolt"
 	"gopkg.in/yaml.v2"
-	"github.com/imroc/req"
 )
 
 func initBuckets(tx *bolt.Tx) error {
@@ -24,7 +25,13 @@ type jutgeDB struct {
 
 // NewJutgeDB returns jutgeDB object
 func NewJutgeDB(dbFile string) *jutgeDB {
-	return &jutgeDB{dbFile, nil, true}
+	jDB := jutgeDB{dbFile, nil, true}
+	if _, err := os.Stat(dbFile); os.IsNotExist(err) {
+		os.Create(dbFile)
+		fmt.Println("Created new DB file")
+		jDB.initWrite()
+	}
+	return &jDB
 }
 
 type problemData struct {
@@ -47,9 +54,9 @@ func (jDB *jutgeDB) initRead() (err error) {
 
 func (jDB *jutgeDB) initWrite() (err error) {
 	if jDB.db == nil || jDB.ro {
-        if jDB != nil {
-            jDB.db.Close()
-        }
+		if jDB.db != nil {
+			jDB.db.Close()
+		}
 		jDB.db, err = bolt.Open(jDB.dbFile, 0600, nil)
 		jDB.ro = false
 		jDB.db.Update(initBuckets)
@@ -63,9 +70,13 @@ func (jDB *jutgeDB) Close() {
 	}
 }
 
-func (jDB *jutgeDB) Print() {
-	jDB.initRead()
-	jDB.db.View(func(tx *bolt.Tx) error {
+func (jDB *jutgeDB) Print() error {
+	err := jDB.initRead()
+	if err != nil {
+		return err
+	}
+
+	return jDB.db.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte("Problems"))
 
 		b.ForEach(func(k, v []byte) error {
@@ -78,9 +89,13 @@ func (jDB *jutgeDB) Print() {
 }
 
 func (jDB *jutgeDB) Query(code string) (string, error) {
-	jDB.initRead()
+	err := jDB.initRead()
+	if err != nil {
+		return "", err
+	}
+
 	title := ""
-	err := jDB.db.View(func(tx *bolt.Tx) error {
+	err = jDB.db.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte("Problems"))
 		v := b.Get([]byte(code))
 		title = string(v)
@@ -91,7 +106,11 @@ func (jDB *jutgeDB) Query(code string) (string, error) {
 }
 
 func (jDB *jutgeDB) Add(code, title string) error {
-	jDB.initWrite()
+	err := jDB.initWrite()
+	if err != nil {
+		return err
+	}
+
 	return jDB.db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte("Problems"))
 		return b.Put([]byte(code), []byte(title))
@@ -141,14 +160,14 @@ func (jDB *jutgeDB) ImportZip(filename string) error {
 }
 
 func (jDB *jutgeDB) Download() error {
-    if jDB.db != nil {
-        jDB.db.Close()
-    }
-    url := "https://raw.githubusercontent.com/Leixb/jutge/master/jutge.db"
-    r, err := req.Get(url)
-    if err != nil {
-        return err
-    }
+	if jDB.db != nil {
+		jDB.db.Close()
+	}
+	url := "https://raw.githubusercontent.com/Leixb/jutge/master/jutge.db"
+	r, err := req.Get(url)
+	if err != nil {
+		return err
+	}
 
-    return r.ToFile(jDB.dbFile)
+	return r.ToFile(jDB.dbFile)
 }
