@@ -3,7 +3,7 @@ module github.com/Leixb/jutge
 go 1.13
 
 require (
-	github.com/PuerkitoBio/goquery v1.6.1
+	github.com/PuerkitoBio/goquery v1.7.0
 	github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751 // indirect
 	github.com/alecthomas/units v0.0.0-20210208195552-ff826a37aa15 // indirect
 	github.com/andybalholm/cascadia v1.2.0 // indirect
