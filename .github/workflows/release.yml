@@ -37,7 +37,7 @@ jobs:
         arch: [amd64, "386"]
     name: release ${{ matrix.os }}/${{ matrix.arch }}
     steps:
-    - uses: actions/checkout@v2.3.4
+    - uses: actions/checkout@v2.3.5
       with:
         fetch-depth: 1
     - name: download upload_url artifact for release
