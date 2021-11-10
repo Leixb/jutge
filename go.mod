@@ -8,7 +8,7 @@ require (
 	github.com/alecthomas/units v0.0.0-20210208195552-ff826a37aa15 // indirect
 	github.com/andybalholm/cascadia v1.2.0 // indirect
 	github.com/howeyc/gopass v0.0.0-20190910152052-7cb4b85ec19c
-	github.com/imroc/req v0.3.0
+	github.com/imroc/req v0.3.2
 	github.com/sergi/go-diff v1.2.0
 	go.etcd.io/bbolt v1.3.6
 	golang.org/x/crypto v0.0.0-20210513164829-c07d793c2f9a // indirect
