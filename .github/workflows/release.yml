@@ -41,7 +41,7 @@ jobs:
       with:
         fetch-depth: 1
     - name: download upload_url artifact for release
-      uses: actions/download-artifact@v2.0.9
+      uses: actions/download-artifact@v3
       with:
         name: upload_url
     - name: save upload_url to output
