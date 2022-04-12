@@ -24,6 +24,16 @@
           go_1_18
           gopls
           gotools
+          (python3.pkgs.grip.overrideAttrs (old: {
+            src = pkgs.fetchFromGitHub {
+              owner = "joeyespo";
+              repo = "grip";
+              rev = "v4.6.1";
+              sha256 = "sha256-CHL2dy0H/i0pLo653F7aUHFvZHTeZA6jC/rwn1KrEW4=";
+            };
+
+              patches = [ ];
+          }))
         ];
 
       };
