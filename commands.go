@@ -26,7 +26,7 @@ func (d *DownloadCmd) Run(ctx *kong.Context, globals *Globals) error {
 }
 
 type TestCmd struct {
-	Programs []string `arg:"" required:"" help:"the programs to test"`
+	Programs []string `arg:"" required:"" type:"path" help:"the programs to test"`
 
 	Code            string `help:"the code of problem to test"`
 	DownloadMissing bool   `help:"download the missing programs" default:"false"`
@@ -43,7 +43,7 @@ func (t *TestCmd) Run(ctx *kong.Context, globals *Globals) error {
 }
 
 type UploadCmd struct {
-	Files []string `arg:"" required:"" help:"the files to upload"`
+	Files []string `arg:"" required:"" type:"path" help:"the files to upload"`
 
 	Code       string `help:"the code of problem to upload"`
 	Compiler   string `help:"the compiler of problem to upload" default:"AUTO" enum:"${compilers}"`
@@ -93,7 +93,7 @@ type DatabaseCmd struct {
 	} `cmd:"" help:"import zip file into the database"`
 	Download struct{} `cmd:"" help:"download database from remote"`
 
-	Database string `type:"path" help:"the database file"`
+	Database string `type:"path" help:"the database file" env:"JUTGE_DATABASE"`
 }
 
 func (d *DatabaseCmd) Run(ctx *kong.Context, globals *Globals) error {

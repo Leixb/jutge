@@ -13,22 +13,22 @@ import (
 )
 
 type Globals struct {
-	WorkDir     string         `help:"Directory to save jutge files"`
-	Concurrency uint           `help:"Maximum concurrent routines"`
-	Regex       string		   `help:"Regular expression used to validate and find problem codes in filenames"`
-	Username    string         `help:"Username"`
-	Password    string         `help:"Password"`
-	Version     VersionFlag    `help:"Print version and exit"`
+	WorkDir     string      `type:"path" help:"Directory to save jutge files" default:"~/Documents/jutge" env:"JUTGE_WORK_DIR"`
+	Concurrency uint        `help:"Maximum concurrent routines" default:"5"`
+	Regex       string      `help:"Regular expression used to validate and find problem codes in filenames" default:"[PGQX]\d{5}_(ca|en|es|fr|de)"`
+	Username    string      `help:"Username" env:"JUTGE_USERNAME"`
+	Password    string      `help:"Password"`
+	Version     VersionFlag `help:"Print version and exit"`
 }
 
 type CLI struct {
 	Globals
 
-	Download DownloadCmd `cmd:"" help:"Download problems from jutge.org"`
+	Download DownloadCmd `cmd:"" help:"Download problems from jutge.org" aliases:"dl,down"`
 	Test     TestCmd     `cmd:"" help:"Test your solutions"`
-	Upload   UploadCmd   `cmd:"" help:"Upload your solutions"`
-	Check    CheckCmd    `cmd:"" help:"Check the status of your solutions"`
-	Database DatabaseCmd `cmd:"" help:"Manage your database"`
+	Upload   UploadCmd   `cmd:"" help:"Upload your solutions" aliases:"up"`
+	Check    CheckCmd    `cmd:"" help:"Check the status of your solutions" aliases:"chk"`
+	Database DatabaseCmd `cmd:"" help:"Manage your database" aliases:"db"`
 	New      NewCmd      `cmd:"" help:"Create a new file"`
 
 	InstallCompletions kongplete.InstallCompletions `cmd:"" help:"install shell completions"`
@@ -59,7 +59,7 @@ func main() {
 		// 	Compact: true,
 		// }),
 		kong.Vars{
-			"version": "0.3.1",
+			"version":   "0.3.1",
 			"compilers": strings.Join(commands.GetCompilers(), ","),
 		})
 
