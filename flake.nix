@@ -30,7 +30,7 @@
         pname = "jutge";
         version = "0.3.1";
         src = ./.;
-        vendorSha256 = "sha256-Cz5/qVzIFmBdnq0EEslhCodJgyqYPRKy9+R5IZTvGDI=";
+        vendorSha256 = "sha256-FMkZz9NHiRObxm8qQDsDPkLh8VhACbZzXnWDko2XFwc=";
       };
 
       defaultPackage = packages.jutge;
