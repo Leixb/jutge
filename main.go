@@ -17,7 +17,7 @@ type Globals struct {
 	Concurrency uint        `help:"Maximum concurrent routines" default:"5"`
 	Regex       string      `help:"Regular expression used to validate and find problem codes in filenames" default:"[PGQX]\d{5}_(ca|en|es|fr|de)"`
 	Username    string      `help:"Username" env:"JUTGE_USERNAME"`
-	Password    string      `help:"Password"`
+	Password    string      `help:"Password" env:"JUTGE_PASSWORD"`
 	Version     VersionFlag `help:"Print version and exit"`
 }
 

@@ -17,11 +17,11 @@ go get https://github.com/Leixb/jutge
 
 ## Configuration
 
-All configuration is done through with enviroment variables, mainly: `JUTGE_WORK_DIR`, `JUTGE_USER` and `JUTGE_PASSWORD` (Although the same options can be set with their respective flags: `--work-dir`, `--user`, `-password`.
+All configuration is done through with enviroment variables, mainly: `JUTGE_WORK_DIR`, `JUTGE_USERNAME` and `JUTGE_PASSWORD` (Although the same options can be set with their respective flags: `--work-dir`, `--user`, `-password`.
 
  - `JUTGE_WORK_DIR` is the directory where you want all the problem files and data to be downloaded. 
 
- - `JUTGE_USER` (OPTIONAL): is the username (email address) to use when logging into jutge.
+ - `JUTGE_USERNAME` (OPTIONAL): is the username (email address) to use when logging into jutge.
  - `JUTGE_PASSWORD` (OPTIONAL): is the password to use when logging into jutge. (!! I do not recommend to set this enviroment variable)
 
 If no user or password are provided, the user will be prompted to enter them when needed.
@@ -31,7 +31,7 @@ It is **very important** to define `JUTGE_WORK_DIR` as an absolute path and add 
  Example `~/.bashrc`:
 ```bash
 export JUTGE_WORK_DIR="${HOME}/Documents/jutge/"
-export JUTGE_USER="example@example.com"
+export JUTGE_USERNAME="example@example.com"
 ```
 
 If you want to use the `new` command you need to add the file `jutge.db` into your `$JUTGE_WORK_DIR` . You can download it directly from this repo with curl:
