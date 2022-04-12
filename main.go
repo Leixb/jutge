@@ -2,10 +2,14 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/Leixb/jutge/commands"
+
 	"github.com/alecthomas/kong"
+	"github.com/posener/complete"
+	"github.com/willabides/kongplete"
 )
 
 type Globals struct {
@@ -26,6 +30,8 @@ type CLI struct {
 	Check    CheckCmd    `cmd:"" help:"Check the status of your solutions"`
 	Database DatabaseCmd `cmd:"" help:"Manage your database"`
 	New      NewCmd      `cmd:"" help:"Create a new file"`
+
+	InstallCompletions kongplete.InstallCompletions `cmd:"" help:"install shell completions"`
 }
 
 type VersionFlag string
@@ -45,7 +51,7 @@ func main() {
 		},
 	}
 
-	ctx := kong.Parse(&cli,
+	parser := kong.Must(&cli,
 		kong.Name("jutge"),
 		kong.Description("Jutge is a command line tool to download and test problems from jutge.org"),
 		kong.UsageOnError(),
@@ -56,6 +62,14 @@ func main() {
 			"version": "0.3.1",
 			"compilers": strings.Join(commands.GetCompilers(), ","),
 		})
-	err := ctx.Run(&cli.Globals)
+
+	kongplete.Complete(parser,
+		kongplete.WithPredictor("file", complete.PredictFiles("*")),
+	)
+
+	ctx, err := parser.Parse(os.Args[1:])
+	parser.FatalIfErrorf(err)
+
+	err = ctx.Run(&cli.Globals)
 	ctx.FatalIfErrorf(err)
 }

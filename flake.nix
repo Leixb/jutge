@@ -32,14 +32,29 @@
         pname = "jutge";
         version = "0.3.1";
         src = ./.;
-        vendorSha256 = "sha256-swYBwxYa+mj9hKp0D/Wt06TMIywFut75rYQQ3E0NhEc=";
+        vendorSha256 = "sha256-xUwORIAWICnYOfApp8p5hBuaXwbzVVDOUtIPM9QATSI=";
 
         buildInputs = [ pkgs.installShellFiles ];
 
         postInstall = ''
-          installShellCompletion --cmd jutge \
-            --bash <($out/bin/jutge --completion-script-bash) \
-            --zsh <($out/bin/jutge --completion-script-zsh)
+          cat <<EOF >jutge.fish
+          function __complete_jutge
+              set -lx COMP_LINE (commandline -cp)
+              test -z (commandline -ct)
+              and set COMP_LINE "$COMP_LINE "
+              $out/bin/jutge
+          end
+          complete -f -c jutge -a "(__complete_jutge)"
+          EOF
+
+          cat <<EOF >jutge.zsh
+          autoload -U +X bashcompinit && bashcompinit
+          complete -C $out/bin/jutge jutge
+          EOF
+
+          echo "complete -C $out/bin/jutge jutge" >jutge.bash
+
+          installShellCompletion --cmd jutge jutge.{bash,fish,zsh}
         '';
       };
 
