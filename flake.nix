@@ -18,6 +18,8 @@
     rec {
       devShell = pkgs.mkShellNoCC {
 
+        name = "go_1.18";
+
         buildInputs = with pkgs; [
           go_1_18
           gopls
