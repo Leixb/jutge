@@ -24,6 +24,7 @@
           go_1_18
           gopls
           gotools
+          golint
           (python3.pkgs.grip.overrideAttrs (old: {
             src = pkgs.fetchFromGitHub {
               owner = "joeyespo";
