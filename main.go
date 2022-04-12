@@ -70,6 +70,6 @@ func main() {
 	ctx, err := parser.Parse(os.Args[1:])
 	parser.FatalIfErrorf(err)
 
-	err = ctx.Run(&cli.Globals)
+	err = ctx.Run(ctx, &cli.Globals)
 	ctx.FatalIfErrorf(err)
 }

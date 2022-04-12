@@ -3,10 +3,15 @@ package main
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/Leixb/jutge/commands"
+	"github.com/Leixb/jutge/database"
+
+	"github.com/alecthomas/kong"
 )
 
 type DownloadCmd struct {
@@ -15,7 +20,7 @@ type DownloadCmd struct {
 	Overwrite bool `help:"overwrite the existing files" default:"false"`
 }
 
-func (d *DownloadCmd) Run(globals *Globals) error {
+func (d *DownloadCmd) Run(ctx *kong.Context, globals *Globals) error {
 	return commands.DownloadProblems(
 		d.Codes, globals.WorkDir, globals.Concurrency, d.Overwrite, regexp.MustCompile(globals.Regex))
 }
@@ -28,7 +33,7 @@ type TestCmd struct {
 	Overwrite       bool   `help:"overwrite the existing files" default:"false"`
 }
 
-func (t *TestCmd) Run(globals *Globals) error {
+func (t *TestCmd) Run(ctx *kong.Context, globals *Globals) error {
 	passedTotal, countTotal, err := commands.TestPrograms(
 		t.Code, t.Programs, globals.WorkDir, t.DownloadMissing, t.Overwrite, globals.Concurrency, regexp.MustCompile(globals.Regex))
 
@@ -46,7 +51,7 @@ type UploadCmd struct {
 	Check      bool   `help:"check the uploaded files" default:"false"`
 }
 
-func (u *UploadCmd) Run(globals *Globals) error {
+func (u *UploadCmd) Run(ctx *kong.Context, globals *Globals) error {
 	codes, err := commands.UploadFiles(u.Files, u.Code, u.Compiler, u.Annotation, globals.Concurrency, regexp.MustCompile(globals.Regex))
 	if err != nil {
 		return err
@@ -70,13 +75,56 @@ type CheckCmd struct {
 	Codes []string `arg:"" required:"" help:"the codes of problems to check"`
 }
 
-func (c *CheckCmd) Run(globals *Globals) error {
+func (c *CheckCmd) Run(ctx *kong.Context, globals *Globals) error {
 	return commands.CheckProblems(c.Codes, globals.Concurrency, regexp.MustCompile(globals.Regex))
 }
 
-type DatabaseCmd struct{}
+type DatabaseCmd struct {
+	Dump struct{} `cmd:"" help:"dump the database contents"`
+	Add  struct {
+		Code  string `arg:"" required:"" help:"the code of problem to add"`
+		Title string `arg:"" required:"" help:"the title of problem to add"`
+	} `cmd:"" help:"add a problem to the database"`
+	Query struct {
+		Code string `arg:"" required:"" help:"the code of problem to query"`
+	} `cmd:"" help:"query the database"`
+	Import struct {
+		ZipFile string `arg:"" required:"" type:"path" help:"the zip file to import"`
+	} `cmd:"" help:"import zip file into the database"`
+	Download struct{} `cmd:"" help:"download database from remote"`
 
-func (d *DatabaseCmd) Run(globals *Globals) error {
+	Database string `type:"path" help:"the database file"`
+}
+
+func (d *DatabaseCmd) Run(ctx *kong.Context, globals *Globals) error {
+	if d.Database == "" {
+		d.Database = filepath.Join(globals.WorkDir, "jutge.db")
+	}
+
+	db := database.NewJutgeDB(d.Database)
+
+	command := strings.SplitN(ctx.Command(), " ", 3)[1]
+
+	switch command {
+	case "dump":
+		return db.Print()
+	case "add":
+		return db.Add(d.Add.Code, d.Add.Title)
+	case "query":
+		if title, err := db.Query(d.Query.Code); err != nil {
+			fmt.Println("Code not found in database")
+			return err
+		} else {
+			fmt.Println(title)
+		}
+	case "import":
+		return db.ImportZip(d.Import.ZipFile)
+	case "download":
+		return db.Download()
+	default:
+		return fmt.Errorf("unknown command: %s", command)
+	}
+
 	return nil
 }
 
@@ -86,7 +134,7 @@ type NewCmd struct {
 	Extension string `help:"the extension of problem to create" default:"cc"`
 }
 
-func (n *NewCmd) Run(globals *Globals) error {
+func (n *NewCmd) Run(ctx *kong.Context, globals *Globals) error {
 	filename, err := commands.GetFilename(globals.WorkDir, n.Code, n.Extension)
 	if err != nil {
 		return err
