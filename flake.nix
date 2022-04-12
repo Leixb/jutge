@@ -32,7 +32,7 @@
         pname = "jutge";
         version = "0.3.1";
         src = ./.;
-        vendorSha256 = "sha256-FMkZz9NHiRObxm8qQDsDPkLh8VhACbZzXnWDko2XFwc=";
+        vendorSha256 = "sha256-swYBwxYa+mj9hKp0D/Wt06TMIywFut75rYQQ3E0NhEc=";
 
         buildInputs = [ pkgs.installShellFiles ];
 

@@ -7,34 +7,26 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"regexp"
 	"sync"
 
 	"github.com/imroc/req"
 )
 
-type download struct {
-	Overwrite bool
-}
-
-// NewDownload returns download object
-func NewDownload() *download {
-	return &download{Overwrite: false}
-}
-
 // DownloadProblems downloads all problems from `codes []string` concurrently
-func (d *download) DownloadProblems(codes []string) error {
+func DownloadProblems(codes []string, folder string, concurrency uint, overwrite bool, regex *regexp.Regexp) error {
 	var wg sync.WaitGroup
-	sem := make(chan bool, conf.concurrency)
+	sem := make(chan bool, concurrency)
 
 	for _, code := range codes {
 		sem <- true
 		wg.Add(1)
 
-		code = getCodeOrSame(code)
+		code = getCodeOrSame(code, regex)
 		go func(c string) {
 			defer func() { <-sem; wg.Done() }()
 
-			err := d.DownloadProblem(c)
+			err := DownloadProblem(c, folder, overwrite)
 			if err != nil {
 				fmt.Println(" ! Failed", c, err)
 			}
@@ -44,14 +36,14 @@ func (d *download) DownloadProblems(codes []string) error {
 	return nil
 }
 
-// downloadProblem downloads problem data and stores it in Conf.WorkDir
-func (d *download) DownloadProblem(code string) error {
+// downloadProblem downloads problem data and stores it in folder
+func DownloadProblem(code, folder string, overwrite bool, creds ...string) error {
 	rq := req.New()
 
 	var err error
 
 	if code[0] == byte('X') {
-		rq, err = getReq()
+		rq = getReq(creds...)
 		if err != nil {
 			return err
 		}
@@ -80,10 +72,10 @@ func (d *download) DownloadProblem(code string) error {
 
 	for _, f := range z.File {
 
-		fpath := filepath.Join(conf.workDir, f.Name)
+		fpath := filepath.Join(folder, f.Name)
 
 		if _, err = os.Stat(fpath); err == nil {
-			if !d.Overwrite {
+			if !overwrite {
 				fmt.Println(" + Skipping:", fpath)
 				continue
 			}

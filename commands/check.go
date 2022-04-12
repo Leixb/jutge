@@ -2,6 +2,7 @@ package commands
 
 import (
 	"fmt"
+	"regexp"
 	"strconv"
 	"strings"
 	"sync"
@@ -9,17 +10,10 @@ import (
 	"github.com/PuerkitoBio/goquery"
 )
 
-type check struct{}
-
-// NewCheck returns check object
-func NewCheck() *check {
-	return &check{}
-}
-
 // CheckProblems concurrently runs CheckProblem() for all problems in `codes []string`
-func (c *check) CheckProblems(codes []string) error {
+func CheckProblems(codes []string, concurrency uint, regex *regexp.Regexp) error {
 	var wg sync.WaitGroup
-	sem := make(chan bool, conf.concurrency)
+	sem := make(chan bool, concurrency)
 
 	for _, code := range codes {
 		sem <- true
@@ -27,9 +21,9 @@ func (c *check) CheckProblems(codes []string) error {
 		go func(pCode string) {
 			defer func() { <-sem; wg.Done() }()
 
-			pCode = getCodeOrSame(pCode)
+			pCode = getCodeOrSame(pCode, regex)
 
-			veredict, err := c.CheckProblem(pCode)
+			veredict, err := CheckProblem(pCode)
 			if err != nil {
 				fmt.Println(" ! Error", pCode, err)
 			} else {
@@ -45,11 +39,8 @@ func (c *check) CheckProblems(codes []string) error {
 }
 
 // CheckProblem gets veredict for the given problem code
-func (c *check) CheckProblem(code string) (string, error) {
-	rq, err := getReq()
-	if err != nil {
-		return "", err
-	}
+func CheckProblem(code string) (string, error) {
+	rq := getReq()
 
 	r, err := rq.Get("https://jutge.org/problems/" + code)
 	if err != nil {
@@ -75,11 +66,8 @@ func (c *check) CheckProblem(code string) (string, error) {
 }
 
 // CheckSubmission gets submission veredict for the given code and submission number
-func (c *check) CheckSubmission(code string, submission int) (string, error) {
-	rq, err := getReq()
-	if err != nil {
-		return "", err
-	}
+func CheckSubmission(code string, submission int) (string, error) {
+	rq := getReq()
 
 	r, err := rq.Get(fmt.Sprintf("https://jutge.org/problems/%s/submissions/S%03d", code, submission))
 	if err != nil {
@@ -105,11 +93,8 @@ func (c *check) CheckSubmission(code string, submission int) (string, error) {
 }
 
 // GetNumSubmissions gets the number of submissions for the given code
-func (c *check) GetNumSubmissions(code string) (int, error) {
-	rq, err := getReq()
-	if err != nil {
-		return 0, err
-	}
+func GetNumSubmissions(code string) (int, error) {
+	rq := getReq()
 
 	r, err := rq.Get("https://jutge.org/problems/" + code)
 	if err != nil {
@@ -130,11 +115,11 @@ func (c *check) GetNumSubmissions(code string) (int, error) {
 }
 
 // CheckLast gets veredict of last submission for the given code
-func (c *check) CheckLast(code string) (string, error) {
-	n, err := c.GetNumSubmissions(code)
+func CheckLast(code string) (string, error) {
+	n, err := GetNumSubmissions(code)
 	if err != nil {
 		return "Error", err
 	}
 
-	return c.CheckSubmission(code, n)
+	return CheckSubmission(code, n)
 }

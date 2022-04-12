@@ -4,25 +4,11 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 	"sync"
-	"time"
 
 	"github.com/imroc/req"
 )
-
-type upload struct {
-	Code       string
-	Compiler   string
-	Annotation string
-	Check      bool
-
-	codes map[string]bool
-}
-
-// NewUpload returns upload object
-func NewUpload() *upload {
-	return &upload{codes: make(map[string]bool), Compiler: "G++11"}
-}
 
 // GetCompilers returns a list with all valid compilers for upload
 func GetCompilers() []string {
@@ -37,6 +23,8 @@ var compilers = []string{
 	"PHP", "PRO2", "Python", "Python3", "Quiz", "R", "Ruby", "RunHaskell",
 	"RunPython", "Rust", "Stalin", "Verilog", "WS",
 }
+
+type Set map[string]bool
 
 var associatedCompilers = map[string]string{
 	".ada":  "GNAT",
@@ -71,13 +59,15 @@ var associatedCompilers = map[string]string{
 }
 
 // UploadFiles concurrently uploads all files in `files []string`
-func (u *upload) UploadFiles(files []string) error {
+func UploadFiles(files []string, code, compiler, annotation string, concurrency uint, regex *regexp.Regexp) (Set, error) {
 	var err error
 
-	extractCode := u.Code == ""
+	extractCode := code == ""
 
 	var wg sync.WaitGroup
-	sem := make(chan bool, conf.concurrency)
+	sem := make(chan bool, concurrency)
+
+	codes := make(Set)
 
 	for _, file := range files {
 		sem <- true
@@ -87,9 +77,8 @@ func (u *upload) UploadFiles(files []string) error {
 
 			fmt.Println(" - Uploading:", f)
 
-			code := u.Code
 			if extractCode {
-				code, err = getCode(f)
+				code, err = getCode(f, regex)
 				if err != nil {
 					fmt.Println(" ! Can't get code for file:", f)
 					return
@@ -97,20 +86,20 @@ func (u *upload) UploadFiles(files []string) error {
 
 			}
 
-			err = u.UploadFile(f, code)
+			err = UploadFile(f, code, compiler, annotation)
 			if err != nil {
 				fmt.Println(" ! Upload failed", f, err)
 				return
 			}
 			// Add code to set so it can be checked later
-			u.codes[code] = true
+			codes[code] = true
 
 		}(file)
 	}
 
 	wg.Wait()
 
-	return err
+	return codes, err
 }
 
 func guessCompiler(fileName string) string {
@@ -125,19 +114,15 @@ func guessCompiler(fileName string) string {
 }
 
 // UploadFile submits file to jutge.org for the problem given by code
-func (u *upload) UploadFile(fileName, code string) error {
-	token, err := getToken()
-	if err != nil {
-		return err
-	}
+func UploadFile(fileName, code, compiler, annotation string) error {
+	token := getToken()
 
-	compiler := u.Compiler
 	if compiler == "AUTO" {
 		compiler = guessCompiler(fileName)
 	}
 
 	param := req.Param{
-		"annotation":  u.Annotation,
+		"annotation":  annotation,
 		"compiler_id": compiler,
 		"submit":      "submit",
 		"token_uid":   token,
@@ -155,48 +140,11 @@ func (u *upload) UploadFile(fileName, code string) error {
 		FileName:  "program",
 	}
 
-	rq, err := getReq()
+	rq := getReq()
 	if err != nil {
 		return err
 	}
 
 	_, err = rq.Post("https://jutge.org/problems/"+code+"/submissions", param, file)
 	return err
-}
-
-// CheckUploaded checks the veredict of uploaded problems
-//
-// Bugs(): It checks the last submission for every problem code,
-// meaning that if you submit more than 1 solution for the same problem,
-// it will only check one of the veredicts.
-func (u *upload) CheckUploaded() error {
-	var wg sync.WaitGroup
-	sem := make(chan bool, conf.concurrency)
-
-	checker := NewCheck()
-
-	for code := range u.codes {
-		sem <- true
-		wg.Add(1)
-
-		go func(c string) {
-			defer func() { <-sem; wg.Done() }()
-			for i := 0; i < 6; i++ {
-				time.Sleep(time.Second * 5)
-				veredict, err := checker.CheckLast(c)
-				if err != nil {
-					fmt.Println(" ! Error checking", c, err)
-					return
-				}
-				if veredict != "Not found" {
-					fmt.Println(" -", c, veredict)
-					return
-				}
-			}
-			fmt.Println(" !", c, "Timed out")
-		}(code)
-	}
-
-	wg.Wait()
-	return nil
 }

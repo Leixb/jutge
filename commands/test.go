@@ -9,35 +9,26 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
+	"regexp"
 
 	"github.com/sergi/go-diff/diffmatchpatch"
 )
 
-type test struct {
-	Code            string
-	DownloadMissing bool
-}
-
-// NewTest returns test object
-func NewTest() *test {
-	return &test{Code: "", DownloadMissing: false}
-}
-
 // TestPrograms concurrently tests all the programs in `programs []string`
-func (t *test) TestPrograms(programs []string) (passedTotal, countTotal int, err error) {
+func TestPrograms(globalCode string, programs []string, workDir string, downloadMissing, overwrite bool, concurrency uint, regex *regexp.Regexp) (passedTotal, countTotal int, err error) {
 	for _, fileName := range programs {
 
-		var code string
+		code := globalCode
 
-		if t.Code == "" {
-			code, err = getCode(fileName)
+		if globalCode == "" {
+			code, err = getCode(fileName, regex)
 			if err != nil {
 				fmt.Println(" ! Can't get code for", fileName, err)
 				continue
 			}
 		}
 
-		passed, count, err := t.TestProgram(code, fileName)
+		passed, count, err := TestProgram(code, fileName, workDir, downloadMissing, overwrite, concurrency)
 		if err != nil {
 			fmt.Println(" !  Error running tests for", fileName)
 			continue
@@ -55,12 +46,12 @@ func (t *test) TestPrograms(programs []string) (passedTotal, countTotal int, err
 // TestProgram tests program fileName against all sample files for the given code found at Conf.WorkDir
 // If there is no folder for the code, it tries to download the files from jutge.org (Downloading can be
 // disabled by setting t.DownloadMissing to False).
-func (t *test) TestProgram(code, fileName string) (passed, count int, err error) {
-	folder := filepath.Join(conf.workDir, code)
+func TestProgram(code, fileName, workDir string, downloadMissing bool, overwrite bool, concurrency uint) (passed, count int, err error) {
+	folder := filepath.Join(workDir, code)
 
-	if _, err := os.Stat(folder); os.IsNotExist(err) && t.DownloadMissing {
+	if _, err := os.Stat(folder); os.IsNotExist(err) && downloadMissing {
 		fmt.Println(" -", folder, "does not exist, downloading...")
-		err = NewDownload().DownloadProblem(code)
+		err = DownloadProblem(code, workDir, overwrite)
 		if err != nil {
 			return 0, 0, err
 		}
@@ -72,7 +63,7 @@ func (t *test) TestProgram(code, fileName string) (passed, count int, err error)
 	}
 
 	var wg sync.WaitGroup
-	sem := make(chan bool, conf.concurrency)
+	sem := make(chan bool, concurrency)
 
 	for _, inputFile := range inputFiles {
 
@@ -83,7 +74,7 @@ func (t *test) TestProgram(code, fileName string) (passed, count int, err error)
 		go func(iFile string) {
 			defer func() { <-sem; wg.Done() }()
 
-			ok, err := t.runTest(fileName, iFile)
+			ok, err := runTest(fileName, iFile)
 			if err != nil {
 				fmt.Println(" ! Error on", iFile, err)
 			}
@@ -103,8 +94,8 @@ func (t *test) TestProgram(code, fileName string) (passed, count int, err error)
 
 // runTest tests program against a single sample. If the output of the program
 // does not match the expected output it prints an error and a diff
-func (t *test) runTest(command, iFile string) (bool, error) {
-	output, err := t.runCommand(command, iFile)
+func runTest(command, iFile string) (bool, error) {
+	output, err := runCommand(command, iFile)
 	if err != nil {
 		return false, err
 	}
@@ -136,7 +127,7 @@ func (t *test) runTest(command, iFile string) (bool, error) {
 }
 
 // runCommand run command with input from file inputFile and return output
-func (t *test) runCommand(command, inputFile string) ([]byte, error) {
+func runCommand(command, inputFile string) ([]byte, error) {
 
 	if len(command) == 0 {
 		return nil, fmt.Errorf("Empty command")

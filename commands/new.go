@@ -17,15 +17,6 @@ import (
 	"golang.org/x/text/unicode/norm"
 )
 
-type newfile struct {
-	Code      string
-	Extension string
-}
-
-func NewNewfile() *newfile {
-	return &newfile{Extension: "cpp"}
-}
-
 func isMn(r rune) bool {
 	return unicode.Is(unicode.Mn, r) // Mn: nonspacing marks
 }
@@ -45,10 +36,7 @@ func GetName(code string) (string, error) {
 	var err error
 
 	if code[0] == byte('X') {
-		rq, err = getReq()
-		if err != nil {
-			return "", err
-		}
+		rq = getReq()
 	}
 
 	r, err := rq.Get("https://jutge.org/problems/" + code)
@@ -66,31 +54,31 @@ func GetName(code string) (string, error) {
 	return name, nil
 }
 
-func (n *newfile) GetFilename() (string, error) {
+func GetFilename(folder, code, extension string) (string, error) {
 
-	dbFile := filepath.Join(*WorkDir(), "jutge.db")
+	dbFile := filepath.Join(folder, "jutge.db")
 	db := database.NewJutgeDB(dbFile)
 	defer db.Close()
 
-	problemName, err := db.Query(n.Code)
+	problemName, err := db.Query(code)
 	if err != nil {
 		return "", err
 	}
 
 	if problemName == "" {
-		problemName, err = GetName(n.Code)
+		problemName, err = GetName(code)
 		if err != nil {
 			return "", err
 		}
 		if problemName == "" {
-			return fmt.Sprintf("%s.%s", n.Code, n.Extension), nil
+			return fmt.Sprintf("%s.%s", code, extension), nil
 		}
-		db.Add(n.Code, problemName)
+		db.Add(code, problemName)
 	}
 
 	problemName = normalizeString(problemName)
 
-	filename := fmt.Sprintf("%s_%s.%s", n.Code, problemName, n.Extension)
+	filename := fmt.Sprintf("%s_%s.%s", code, problemName, extension)
 
 	return filename, nil
 }
