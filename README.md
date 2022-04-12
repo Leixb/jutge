@@ -3,7 +3,6 @@
 [![Build Status](https://github.com/Leixb/jutge/workflows/build/badge.svg)](https://github.com/Leixb/jutge/actions)
 [![LICENSE](https://img.shields.io/github/license/Leixb/jutge)](https://github.com/Leixb/jutge/blob/master/LICENSE)
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/Leixb/jutge)](https://github.com/Leixb/jutge/releases/latest)
-[![HitCount](http://hits.dwyl.io/Leixb/jutge.svg)](http://hits.dwyl.io/Leixb/jutge)
 [![Go Report Card](https://goreportcard.com/badge/github.com/Leixb/jutge)](https://goreportcard.com/report/github.com/Leixb/jutge)
 [![GoDoc](https://godoc.org/github.com/Leixb/jutge?status.svg)](https://godoc.org/github.com/Leixb/jutge)
 
