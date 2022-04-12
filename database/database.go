@@ -12,11 +12,6 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-func initBuckets(tx *bolt.Tx) error {
-	_, err := tx.CreateBucketIfNotExists([]byte("Problems"))
-	return err
-}
-
 type jutgeDB struct {
 	dbFile string
 	db     *bolt.DB
@@ -27,8 +22,17 @@ type jutgeDB struct {
 func NewJutgeDB(dbFile string) *jutgeDB {
 	jDB := jutgeDB{dbFile, nil, true}
 	if _, err := os.Stat(dbFile); os.IsNotExist(err) {
-		os.Create(dbFile)
-		fmt.Println("Created new DB file")
+		err := os.MkdirAll(filepath.Dir(dbFile), 0755)
+		if err != nil {
+			panic(err)
+		}
+		_, err = os.Create(dbFile)
+		if err != nil {
+			panic(err)
+		}
+
+		full_path, _ := filepath.Abs(dbFile)
+		fmt.Println("Created new DB file", full_path)
 		jDB.initWrite()
 	}
 	return &jDB
@@ -58,8 +62,15 @@ func (jDB *jutgeDB) initWrite() (err error) {
 			jDB.db.Close()
 		}
 		jDB.db, err = bolt.Open(jDB.dbFile, 0600, nil)
+		if err != nil {
+			return err
+		}
+
 		jDB.ro = false
-		jDB.db.Update(initBuckets)
+		jDB.db.Update(func(tx *bolt.Tx) error {
+			_, err := tx.CreateBucketIfNotExists([]byte("Problems"))
+			return err
+		})
 	}
 	return
 }
