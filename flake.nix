@@ -31,6 +31,14 @@
         version = "0.3.1";
         src = ./.;
         vendorSha256 = "sha256-FMkZz9NHiRObxm8qQDsDPkLh8VhACbZzXnWDko2XFwc=";
+
+        buildInputs = [ pkgs.installShellFiles ];
+
+        postInstall = ''
+          installShellCompletion --cmd jutge \
+            --bash <($out/bin/jutge --completion-script-bash) \
+            --zsh <($out/bin/jutge --completion-script-zsh)
+        '';
       };
 
       defaultPackage = packages.jutge;
