@@ -14,7 +14,7 @@ import (
 // DownloadProblems downloads all problems from `codes []string` concurrently
 func (j *jutge) DownloadProblems(codes []string, overwrite bool, concurrency uint) error {
 	return RunParallelFuncs(codes, func(code string) error {
-		return j.DownloadProblem(getCodeOrSame(code, j.regex), j.folder, overwrite)
+		return j.DownloadProblem(j.getCodeOrSame(code), j.folder, overwrite)
 		}, concurrency)
 }
 

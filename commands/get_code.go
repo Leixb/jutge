@@ -2,12 +2,11 @@ package commands
 
 import (
 	"errors"
-	"regexp"
 )
 
 // getCode match regex against string and return matching code
-func getCode(fileName string, regex *regexp.Regexp) (string, error) {
-	code := regex.FindString(fileName)
+func (j *jutge) getCode(fileName string) (string, error) {
+	code := j.regex.FindString(fileName)
 	if len(code) == 0 {
 		return "", errors.New("No match")
 	}
@@ -16,8 +15,8 @@ func getCode(fileName string, regex *regexp.Regexp) (string, error) {
 }
 
 // getCodeOrSame getCode or return the original value if not matched
-func getCodeOrSame(fileName string, regex *regexp.Regexp) string {
-	code, err := getCode(fileName, regex)
+func (j *jutge) getCodeOrSame(fileName string) string {
+	code, err := j.getCode(fileName)
 	if err != nil {
 		return fileName
 	}

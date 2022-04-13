@@ -75,7 +75,7 @@ func (j *jutge) UploadFiles(files []string, code, compiler, annotation string, c
 		var err error
 
 		if extractCode {
-			code, err = getCode(file, j.regex)
+			code, err = j.getCode(file)
 			if err != nil {
 				fmt.Println(" ! Can't get code for file:", file)
 				return err

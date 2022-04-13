@@ -19,7 +19,7 @@ func (j *jutge) TestPrograms(globalCode string, programs []string, downloadMissi
 		code := globalCode
 
 		if globalCode == "" {
-			code, err = getCode(fileName, j.regex)
+			code, err = j.getCode(fileName)
 			if err != nil {
 				fmt.Println(" ! Can't get code for", fileName, err)
 				continue

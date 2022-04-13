@@ -11,7 +11,7 @@ import (
 // CheckProblems concurrently runs CheckProblem() for all problems in `codes []string`
 func (j *jutge) CheckProblems(codes []string, concurrency uint) error {
 	return RunParallelFuncs(codes, func(code string) error {
-		code = getCodeOrSame(code, j.regex)
+		code = j.getCodeOrSame(code)
 
 		veredict, err := j.CheckProblem(code)
 		if err != nil {
