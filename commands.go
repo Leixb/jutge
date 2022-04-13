@@ -73,10 +73,32 @@ func (u *UploadCmd) Run(ctx *kong.Context, globals *Globals) error {
 
 type CheckCmd struct {
 	Codes []string `arg:"" required:"" help:"the codes of problems to check"`
+
+	Submission int `optional:"" short:"s" help:"the submission number to check (negative to check from back, 0 to check problem status as a whole)" default:"0"`
 }
 
 func (c *CheckCmd) Run(ctx *kong.Context, globals *Globals) error {
-	return commands.CheckProblems(c.Codes, globals.Concurrency, regexp.MustCompile(globals.Regex))
+	if c.Submission == 0 {
+		return commands.CheckProblems(c.Codes, globals.Concurrency, regexp.MustCompile(globals.Regex))
+	}
+	for _, code := range c.Codes {
+		subn := c.Submission
+		if c.Submission < 0 {
+			n, err := commands.GetNumSubmissions(code)
+			if err != nil {
+				fmt.Println("Error checking submissions of", code)
+				continue
+			}
+			subn = n + 1 + c.Submission
+		}
+		veredict, err := commands.CheckSubmission(code, subn)
+		if err != nil {
+			fmt.Println("Error checking submission", subn, "of", code)
+			continue
+		}
+		fmt.Println(code, subn, veredict)
+	}
+	return nil
 }
 
 type DatabaseCmd struct {
