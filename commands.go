@@ -14,6 +14,19 @@ import (
 	"github.com/alecthomas/kong"
 )
 
+func jutgeConf(globals *Globals) (*commands.JutgeConfig, error) {
+	regex, err := regexp.Compile(globals.Regex)
+	if err != nil {
+		return nil, err
+	}
+
+	return &commands.JutgeConfig{
+		URL:    globals.URL,
+		Folder: globals.WorkDir,
+		Regex:  regex,
+	}, nil
+}
+
 type DownloadCmd struct {
 	Codes []string `arg:"" required:"" help:"the codes of problems to download"`
 
@@ -21,8 +34,13 @@ type DownloadCmd struct {
 }
 
 func (d *DownloadCmd) Run(ctx *kong.Context, globals *Globals) error {
-	return commands.DownloadProblems(
-		d.Codes, globals.WorkDir, globals.Concurrency, d.Overwrite, regexp.MustCompile(globals.Regex))
+	conf, err := jutgeConf(globals)
+	if err != nil {
+		return err
+	}
+
+	return commands.Jutge(conf).DownloadProblems(
+		d.Codes, d.Overwrite, globals.Concurrency)
 }
 
 type TestCmd struct {
@@ -34,8 +52,13 @@ type TestCmd struct {
 }
 
 func (t *TestCmd) Run(ctx *kong.Context, globals *Globals) error {
-	passedTotal, countTotal, err := commands.TestPrograms(
-		t.Code, t.Programs, globals.WorkDir, t.DownloadMissing, t.Overwrite, globals.Concurrency, regexp.MustCompile(globals.Regex))
+	conf, err := jutgeConf(globals)
+	if err != nil {
+		return err
+	}
+
+	passedTotal, countTotal, err := commands.Jutge(conf).TestPrograms(
+		t.Code, t.Programs, t.DownloadMissing, t.Overwrite, globals.Concurrency)
 
 	println("Passed:", passedTotal, "Total:", countTotal)
 
@@ -52,7 +75,13 @@ type UploadCmd struct {
 }
 
 func (u *UploadCmd) Run(ctx *kong.Context, globals *Globals) error {
-	codes, err := commands.UploadFiles(u.Files, u.Code, u.Compiler, u.Annotation, globals.Concurrency, regexp.MustCompile(globals.Regex))
+	conf, err := jutgeConf(globals)
+	if err != nil {
+		return err
+	}
+
+	jutge := commands.Jutge(conf)
+	codes, err := jutge.UploadFiles(u.Files, u.Code, u.Compiler, u.Annotation, globals.Concurrency)
 	if err != nil {
 		return err
 	}
@@ -65,7 +94,7 @@ func (u *UploadCmd) Run(ctx *kong.Context, globals *Globals) error {
 			i++
 		}
 		time.Sleep(time.Second * 10)
-		err = commands.CheckProblems(codeList, globals.Concurrency, regexp.MustCompile(globals.Regex))
+		err = jutge.CheckProblems(codeList, globals.Concurrency)
 	}
 
 	return err
@@ -78,27 +107,34 @@ type CheckCmd struct {
 }
 
 func (c *CheckCmd) Run(ctx *kong.Context, globals *Globals) error {
-	if c.Submission == 0 {
-		return commands.CheckProblems(c.Codes, globals.Concurrency, regexp.MustCompile(globals.Regex))
+	conf, err := jutgeConf(globals)
+	if err != nil {
+		return err
 	}
-	for _, code := range c.Codes {
+	jutge := commands.Jutge(conf)
+
+	if c.Submission == 0 {
+		return jutge.CheckProblems(c.Codes, globals.Concurrency)
+	}
+
+	return commands.RunParallelFuncs(c.Codes, func(code string) error {
 		subn := c.Submission
 		if c.Submission < 0 {
-			n, err := commands.GetNumSubmissions(code)
+			n, err := jutge.GetNumSubmissions(code)
 			if err != nil {
 				fmt.Println("Error checking submissions of", code)
-				continue
+				return err
 			}
 			subn = n + 1 + c.Submission
 		}
-		veredict, err := commands.CheckSubmission(code, subn)
+		veredict, err := jutge.CheckSubmission(code, subn)
 		if err != nil {
 			fmt.Println("Error checking submission", subn, "of", code)
-			continue
+			return err
 		}
 		fmt.Println(code, subn, veredict)
-	}
-	return nil
+		return nil
+	}, globals.Concurrency)
 }
 
 type DatabaseCmd struct {
@@ -157,7 +193,12 @@ type NewCmd struct {
 }
 
 func (n *NewCmd) Run(ctx *kong.Context, globals *Globals) error {
-	filename, err := commands.GetFilename(globals.WorkDir, n.Code, n.Extension)
+	conf, err := jutgeConf(globals)
+	if err != nil {
+		return err
+	}
+
+	filename, err := commands.Jutge(conf).GetFilename(n.Code, n.Extension)
 	if err != nil {
 		return err
 	}

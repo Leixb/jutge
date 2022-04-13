@@ -131,26 +131,40 @@ func login(ldata loginData) (cred *Credentials, err error) {
 	return
 }
 
-func (a *Credentials) setTokenUID() error {
-
+func (a *Credentials) getTokenUID() (string, bool, error) {
 	resp, err := a.R.Get("https://jutge.org/problems/P68688_ca")
 	if err != nil {
-		return err
+		return "", false, err
 	}
 
 	doc, err := goquery.NewDocumentFromResponse(resp.Response())
 	if err != nil {
-		return err
+		return "", false, err
 	}
 
+	value, ok := doc.Find(".col-sm-4 > input:nth-child(1)").Attr("value")
+	return value, ok, nil
+}
+
+func (a *Credentials) setTokenUID() error {
 	var ok bool
-	a.TokenUID, ok = doc.Find(".col-sm-4 > input:nth-child(1)").Attr("value")
+	var err error
+
+	a.TokenUID, ok, err = a.getTokenUID()
+	if err != nil {
+		return err
+	}
 
 	if !ok {
 		return &TokenNotFound{}
 	}
 
 	return nil
+}
+
+func (a *Credentials) IsExpired() bool {
+	_, found, _ := a.getTokenUID()
+	return !found
 }
 
 func (ldata *loginData) promptMissing() error {

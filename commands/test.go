@@ -8,27 +8,25 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
-	"sync"
-	"regexp"
 
 	"github.com/sergi/go-diff/diffmatchpatch"
 )
 
 // TestPrograms concurrently tests all the programs in `programs []string`
-func TestPrograms(globalCode string, programs []string, workDir string, downloadMissing, overwrite bool, concurrency uint, regex *regexp.Regexp) (passedTotal, countTotal int, err error) {
+func (j *jutge) TestPrograms(globalCode string, programs []string, downloadMissing, overwrite bool, concurrency uint) (passedTotal, countTotal int, err error) {
 	for _, fileName := range programs {
 
 		code := globalCode
 
 		if globalCode == "" {
-			code, err = getCode(fileName, regex)
+			code, err = getCode(fileName, j.regex)
 			if err != nil {
 				fmt.Println(" ! Can't get code for", fileName, err)
 				continue
 			}
 		}
 
-		passed, count, err := TestProgram(code, fileName, workDir, downloadMissing, overwrite, concurrency)
+		passed, count, err := j.TestProgram(code, fileName, downloadMissing, overwrite, concurrency)
 		if err != nil {
 			fmt.Println(" !  Error running tests for", fileName)
 			continue
@@ -46,12 +44,12 @@ func TestPrograms(globalCode string, programs []string, workDir string, download
 // TestProgram tests program fileName against all sample files for the given code found at Conf.WorkDir
 // If there is no folder for the code, it tries to download the files from jutge.org (Downloading can be
 // disabled by setting t.DownloadMissing to False).
-func TestProgram(code, fileName, workDir string, downloadMissing bool, overwrite bool, concurrency uint) (passed, count int, err error) {
-	folder := filepath.Join(workDir, code)
+func (j *jutge) TestProgram(code, fileName string, downloadMissing bool, overwrite bool, concurrency uint) (passed, count int, err error) {
+	folder := filepath.Join(j.folder, code)
 
 	if _, err := os.Stat(folder); os.IsNotExist(err) && downloadMissing {
 		fmt.Println(" -", folder, "does not exist, downloading...")
-		err = DownloadProblem(code, workDir, overwrite)
+		err = j.DownloadProblem(code, j.folder, overwrite)
 		if err != nil {
 			return 0, 0, err
 		}
@@ -62,34 +60,32 @@ func TestProgram(code, fileName, workDir string, downloadMissing bool, overwrite
 		return
 	}
 
-	var wg sync.WaitGroup
-	sem := make(chan bool, concurrency)
+	passed = 0
+	failed := 0
+	resultChan := make(chan bool)
 
-	for _, inputFile := range inputFiles {
-
-		count++
-
-		sem <- true
-		wg.Add(1)
-		go func(iFile string) {
-			defer func() { <-sem; wg.Done() }()
-
-			ok, err := runTest(fileName, iFile)
-			if err != nil {
-				fmt.Println(" ! Error on", iFile, err)
-			}
-
+	go func() {
+		for ok := range resultChan {
 			if ok {
 				passed++
+			} else {
+				failed++
 			}
+		}
+	}()
 
-		}(inputFile)
+	RunParallelFuncs(inputFiles, func(iFile string) error {
+		ok, err := runTest(fileName, iFile)
+		if err != nil {
+			return err
+		}
+		resultChan <- ok
+		return nil
+	}, concurrency)
 
-	}
+	close(resultChan)
 
-	wg.Wait()
-
-	return
+	return passed, len(inputFiles), nil
 }
 
 // runTest tests program against a single sample. If the output of the program

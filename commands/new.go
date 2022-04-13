@@ -30,13 +30,13 @@ func normalizeString(s string) string {
 	return res
 }
 
-func GetName(code string) (string, error) {
+func (j *jutge) GetName(code string) (string, error) {
 	rq := req.New()
 
 	var err error
 
 	if code[0] == byte('X') {
-		rq = getReq()
+		rq = j.GetReq()
 	}
 
 	r, err := rq.Get("https://jutge.org/problems/" + code)
@@ -54,9 +54,9 @@ func GetName(code string) (string, error) {
 	return name, nil
 }
 
-func GetFilename(folder, code, extension string) (string, error) {
+func (j *jutge) GetFilename(code, extension string) (string, error) {
 
-	dbFile := filepath.Join(folder, "jutge.db")
+	dbFile := filepath.Join(j.folder, "jutge.db")
 	db := database.NewJutgeDB(dbFile)
 	defer db.Close()
 
@@ -66,7 +66,7 @@ func GetFilename(folder, code, extension string) (string, error) {
 	}
 
 	if problemName == "" {
-		problemName, err = GetName(code)
+		problemName, err = j.GetName(code)
 		if err != nil {
 			return "", err
 		}

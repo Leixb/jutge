@@ -19,6 +19,7 @@ type Globals struct {
 	Username    string      `help:"Username" env:"JUTGE_USERNAME"`
 	Password    string      `help:"Password" env:"JUTGE_PASSWORD"`
 	Version     VersionFlag `help:"Print version and exit"`
+	URL         string      `help:"URL to jutge.org" default:"https://jutge.org"`
 }
 
 type CLI struct {

@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"regexp"
-	"sync"
 
 	"github.com/imroc/req"
 )
@@ -59,47 +57,39 @@ var associatedCompilers = map[string]string{
 }
 
 // UploadFiles concurrently uploads all files in `files []string`
-func UploadFiles(files []string, code, compiler, annotation string, concurrency uint, regex *regexp.Regexp) (Set, error) {
-	var err error
-
+func (j *jutge) UploadFiles(files []string, code, compiler, annotation string, concurrency uint) (Set, error) {
 	extractCode := code == ""
-
-	var wg sync.WaitGroup
-	sem := make(chan bool, concurrency)
 
 	codes := make(Set)
 
-	for _, file := range files {
-		sem <- true
-		wg.Add(1)
-		go func(f string) {
-			defer func() { <-sem; wg.Done() }()
+	codeChan := make(chan string)
 
-			fmt.Println(" - Uploading:", f)
-
-			if extractCode {
-				code, err = getCode(f, regex)
-				if err != nil {
-					fmt.Println(" ! Can't get code for file:", f)
-					return
-				}
-
-			}
-
-			err = UploadFile(f, code, compiler, annotation)
-			if err != nil {
-				fmt.Println(" ! Upload failed", f, err)
-				return
-			}
-			// Add code to set so it can be checked later
+	go func() {
+		for code := range codeChan {
 			codes[code] = true
+		}
+	}()
 
-		}(file)
-	}
+	RunParallelFuncs(files, func(file string) error {
+		var code string
+		var err error
 
-	wg.Wait()
+		if extractCode {
+			code, err = getCode(file, j.regex)
+			if err != nil {
+				fmt.Println(" ! Can't get code for file:", file)
+				return err
+			}
 
-	return codes, err
+		}
+
+		return j.UploadFile(file, code, compiler, annotation)
+
+	}, concurrency)
+
+	close(codeChan)
+
+	return codes, nil
 }
 
 func guessCompiler(fileName string) string {
@@ -114,10 +104,10 @@ func guessCompiler(fileName string) string {
 }
 
 // UploadFile submits file to jutge.org for the problem given by code
-func UploadFile(fileName, code, compiler, annotation string) error {
-	token := getToken()
+func (j *jutge) UploadFile(fileName, code, compiler, annotation string) error {
+	token := j.GetToken()
 
-	if compiler == "AUTO" {
+	if compiler == "AUTO" || compiler == "" {
 		compiler = guessCompiler(fileName)
 	}
 
@@ -140,7 +130,7 @@ func UploadFile(fileName, code, compiler, annotation string) error {
 		FileName:  "program",
 	}
 
-	rq := getReq()
+	rq := j.GetReq()
 	if err != nil {
 		return err
 	}

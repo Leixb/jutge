@@ -7,43 +7,25 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"regexp"
-	"sync"
 
 	"github.com/imroc/req"
 )
 
 // DownloadProblems downloads all problems from `codes []string` concurrently
-func DownloadProblems(codes []string, folder string, concurrency uint, overwrite bool, regex *regexp.Regexp) error {
-	var wg sync.WaitGroup
-	sem := make(chan bool, concurrency)
-
-	for _, code := range codes {
-		sem <- true
-		wg.Add(1)
-
-		code = getCodeOrSame(code, regex)
-		go func(c string) {
-			defer func() { <-sem; wg.Done() }()
-
-			err := DownloadProblem(c, folder, overwrite)
-			if err != nil {
-				fmt.Println(" ! Failed", c, err)
-			}
-		}(code)
-	}
-	wg.Wait()
-	return nil
+func (j *jutge) DownloadProblems(codes []string, overwrite bool, concurrency uint) error {
+	return RunParallelFuncs(codes, func(code string) error {
+		return j.DownloadProblem(getCodeOrSame(code, j.regex), j.folder, overwrite)
+		}, concurrency)
 }
 
 // downloadProblem downloads problem data and stores it in folder
-func DownloadProblem(code, folder string, overwrite bool, creds ...string) error {
+func (j *jutge) DownloadProblem(code, folder string, overwrite bool) error {
 	rq := req.New()
 
 	var err error
 
 	if code[0] == byte('X') {
-		rq = getReq(creds...)
+		rq = j.GetReq()
 		if err != nil {
 			return err
 		}
