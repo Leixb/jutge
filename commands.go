@@ -169,12 +169,12 @@ func (d *DatabaseCmd) Run(ctx *kong.Context, globals *Globals) error {
 	case "add":
 		return db.Add(d.Add.Code, d.Add.Title)
 	case "query":
-		if title, err := db.Query(d.Query.Code); err != nil {
+		title, err := db.Query(d.Query.Code);
+		if err != nil {
 			fmt.Println("Code not found in database")
 			return err
-		} else {
-			fmt.Println(title)
 		}
+		fmt.Println(title)
 	case "import":
 		return db.ImportZip(d.Import.ZipFile)
 	case "download":
