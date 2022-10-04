@@ -19,7 +19,7 @@ jobs:
       id: go
 
     - name: Check out code into the Go module directory
-      uses: actions/checkout@v2.3.4
+      uses: actions/checkout@v3.1.0
       with:
         fetch-depth: 1
 
