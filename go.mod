@@ -4,7 +4,7 @@ go 1.18
 
 require (
 	github.com/PuerkitoBio/goquery v1.8.0
-	github.com/alecthomas/kong v0.5.0
+	github.com/alecthomas/kong v0.7.1
 	github.com/howeyc/gopass v0.0.0-20210920133722-c8aef6fb66ef
 	github.com/imroc/req v0.3.2
 	github.com/posener/complete v1.2.3
