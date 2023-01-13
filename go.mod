@@ -8,7 +8,7 @@ require (
 	github.com/howeyc/gopass v0.0.0-20210920133722-c8aef6fb66ef
 	github.com/imroc/req v0.3.2
 	github.com/posener/complete v1.2.3
-	github.com/sergi/go-diff v1.2.0
+	github.com/sergi/go-diff v1.3.1
 	github.com/willabides/kongplete v0.3.0
 	go.etcd.io/bbolt v1.3.6
 	golang.org/x/text v0.3.7
